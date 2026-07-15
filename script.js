@@ -169,6 +169,8 @@ function renderMenu() {
 }
 
 function renderCategories() {
+  if (!categoryGrid) return;
+
   categoryGrid.innerHTML = CATEGORIES.map((category) => {
     const theme = getTheme(category);
     const content = CATEGORY_CONTENT[category] || {};
@@ -289,9 +291,6 @@ function applyStoreConfig() {
     this.remove();
   };
 
-  setText("#categories-eyebrow", SITE_CONTENT.sections.categoriesEyebrow);
-  setText("#categorias-title", SITE_CONTENT.sections.categoriesTitle);
-  setText("#categories-description", SITE_CONTENT.sections.categoriesDescription);
   setText("#news-eyebrow", SITE_CONTENT.sections.newsEyebrow);
   setText("#novidades-title", SITE_CONTENT.sections.newsTitle);
   setText("#news-description", SITE_CONTENT.sections.newsDescription);
