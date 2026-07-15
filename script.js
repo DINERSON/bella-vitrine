@@ -22,6 +22,7 @@ const catalogFeedback = document.querySelector("#catalog-feedback");
 const lookGrid = document.querySelector("#look-grid");
 const menuToggle = document.querySelector(".menu-toggle");
 const navLinks = document.querySelector("#main-menu");
+const menuBackdrop = document.querySelector(".menu-backdrop");
 
 let activeFilter = "Todos";
 let visibleProducts = [...PRODUCTS];
@@ -322,11 +323,31 @@ function applyStoreConfig() {
 }
 
 function setupMenu() {
+  const openMenu = () => {
+    menuToggle.setAttribute("aria-expanded", "true");
+    menuToggle.setAttribute("aria-label", "Fechar menu");
+    navLinks.classList.add("open");
+    document.body.classList.add("menu-open");
+    const firstLink = navLinks.querySelector("a");
+    if (firstLink) firstLink.focus({ preventScroll: true });
+  };
+
+  const closeMenu = () => {
+    menuToggle.setAttribute("aria-expanded", "false");
+    menuToggle.setAttribute("aria-label", "Abrir menu");
+    navLinks.classList.remove("open");
+    document.body.classList.remove("menu-open");
+  };
+
   menuToggle.addEventListener("click", () => {
     const isOpen = menuToggle.getAttribute("aria-expanded") === "true";
-    menuToggle.setAttribute("aria-expanded", String(!isOpen));
-    navLinks.classList.toggle("open");
+    if (isOpen) closeMenu();
+    else openMenu();
   });
+
+  if (menuBackdrop) {
+    menuBackdrop.addEventListener("click", closeMenu);
+  }
 
   navLinks.querySelectorAll("a").forEach((link) => {
     link.addEventListener("click", (event) => {
@@ -335,9 +356,15 @@ function setupMenu() {
         event.preventDefault();
         setActiveFilter(filter);
       }
-      menuToggle.setAttribute("aria-expanded", "false");
-      navLinks.classList.remove("open");
+      closeMenu();
     });
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && menuToggle.getAttribute("aria-expanded") === "true") {
+      closeMenu();
+      menuToggle.focus({ preventScroll: true });
+    }
   });
 }
 
