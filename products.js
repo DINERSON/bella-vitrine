@@ -46,9 +46,6 @@ const SITE_CONTENT = {
       "Moda masculina, feminina e verão em uma vitrine simples, moderna e direta pelo WhatsApp.",
     image: "fotos/banner-prime-vitrine.jpg",
     imageAlt: "Prime Vitrine moda online",
-    cardTitle: "Três estilos, uma vitrine",
-    cardText: "Masculino urbano, feminino elegante e Moda Verão com clima leve de praia.",
-    badges: ["Masculino preto e azul", "Feminino em rosa", "Moda Verão tropical"],
   },
   sections: {
     categoriesEyebrow: "Escolha por identidade",
@@ -103,6 +100,49 @@ const CATALOG_FILTERS = [
   "Acessórios",
   "Promoções",
 ];
+
+const CATEGORY_CONTENT = {
+  "Mais Vendidos": {
+    subtitle: "Os produtos que mais chamam atenção da vitrine.",
+    cta: "Ver destaques",
+    icon: "MV",
+  },
+  Feminino: {
+    subtitle: "Peças modernas e delicadas para todos os estilos.",
+    cta: "Ver coleção",
+    icon: "FE",
+  },
+  Masculino: {
+    subtitle: "Moda urbana e forte para quem gosta de presença.",
+    cta: "Explorar categoria",
+    icon: "MA",
+  },
+  Infantil: {
+    subtitle: "Roupas confortáveis e práticas para os pequenos.",
+    cta: "Ver produtos",
+    icon: "IN",
+  },
+  Oversized: {
+    subtitle: "Peças largas e estilosas com visual atual.",
+    cta: "Ver coleção",
+    icon: "OS",
+  },
+  "Moda Verão": {
+    subtitle: "Looks leves para dias de sol, praia e passeio.",
+    cta: "Explorar verão",
+    icon: "MV",
+  },
+  Acessórios: {
+    subtitle: "Detalhes que completam o visual.",
+    cta: "Ver detalhes",
+    icon: "AC",
+  },
+  Promoções: {
+    subtitle: "Ofertas especiais com preço mais atrativo.",
+    cta: "Ver ofertas",
+    icon: "%",
+  },
+};
 
 // PRODUTOS DE EXEMPLO E FALLBACK
 // Quando o Firebase estiver configurado, a vitrine busca produtos do Firestore.
@@ -273,6 +313,7 @@ Object.assign(window, {
   SITE_CONTENT,
   CATEGORIES,
   CATALOG_FILTERS,
+  CATEGORY_CONTENT,
   PRODUCTS,
   LOOKS,
 });

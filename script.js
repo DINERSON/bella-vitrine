@@ -171,10 +171,17 @@ function renderMenu() {
 function renderCategories() {
   categoryGrid.innerHTML = CATEGORIES.map((category) => {
     const theme = getTheme(category);
+    const content = CATEGORY_CONTENT[category] || {};
+    const icon = content.icon || category.slice(0, 2).toUpperCase();
+    const subtitle = content.subtitle || "Confira as peças disponíveis nesta categoria.";
+    const cta = content.cta || SITE_CONTENT.sections.categoryAction;
+
     return `
       <button class="category-card category-${slugify(category)} theme-${theme}" type="button" data-category="${escapeHtml(category)}">
-        <span>${escapeHtml(category)}</span>
-        <small>${SITE_CONTENT.sections.categoryAction}</small>
+        <span class="category-icon">${escapeHtml(icon)}</span>
+        <span class="category-title">${escapeHtml(category)}</span>
+        <span class="category-description">${escapeHtml(subtitle)}</span>
+        <small>${escapeHtml(cta)}</small>
       </button>
     `;
   }).join("");
@@ -273,8 +280,6 @@ function applyStoreConfig() {
   setText("#hero-title", SITE_CONTENT.hero.title);
   setText("#hero-subtitle", SITE_CONTENT.hero.subtitle);
   setText("#hero-catalog-button", SITE_CONTENT.buttons.viewCatalog);
-  setText("#hero-card-title", SITE_CONTENT.hero.cardTitle);
-  setText("#hero-card-text", SITE_CONTENT.hero.cardText);
 
   const heroImage = document.querySelector("#hero-image");
   heroImage.src = SITE_CONTENT.hero.image;
@@ -283,10 +288,6 @@ function applyStoreConfig() {
     this.closest(".hero-media").classList.add("hero-no-image");
     this.remove();
   };
-
-  document.querySelector("#hero-badges").innerHTML = SITE_CONTENT.hero.badges
-    .map((badge) => `<span>${escapeHtml(badge)}</span>`)
-    .join("");
 
   setText("#categories-eyebrow", SITE_CONTENT.sections.categoriesEyebrow);
   setText("#categorias-title", SITE_CONTENT.sections.categoriesTitle);
