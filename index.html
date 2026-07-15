@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta id="meta-description" name="description" content="" />
-    <title>Catálogo de Moda Feminina</title>
+    <title>Prime Vitrine | Catálogo de Moda</title>
     <link rel="icon" href="data:," />
     <link rel="stylesheet" href="styles.css" />
   </head>
@@ -12,8 +12,8 @@
     <header class="site-header" id="inicio">
       <nav class="nav container" aria-label="Menu principal">
         <a class="brand" href="#inicio" id="header-brand">
-          <span class="brand-mark" id="brand-mark">NL</span>
-          <span data-store-name>Nome da Loja</span>
+          <span class="brand-mark" id="brand-mark">PV</span>
+          <span data-store-name>Prime Vitrine</span>
         </a>
 
         <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-menu">
@@ -43,8 +43,8 @@
             <div class="hero-badges" id="hero-badges" aria-label="Destaques da loja"></div>
           </div>
 
-          <div class="hero-media" aria-label="Banner de moda feminina">
-            <img id="hero-image" src="assets/hero/moda-feminina.jpg" alt="" />
+          <div class="hero-media" aria-label="Banner de moda masculina urbana">
+            <img id="hero-image" src="fotos/banner-prime-vitrine.jpg" alt="" />
             <div class="hero-card">
               <strong id="hero-card-title"></strong>
               <span id="hero-card-text"></span>
@@ -58,6 +58,7 @@
           <div class="section-heading">
             <p class="eyebrow" id="categories-eyebrow"></p>
             <h2 id="categorias-title"></h2>
+            <p class="section-description" id="categories-description"></p>
           </div>
           <div class="category-grid" id="category-grid"></div>
         </div>
@@ -69,6 +70,7 @@
             <div>
               <p class="eyebrow" id="news-eyebrow"></p>
               <h2 id="novidades-title"></h2>
+              <p class="section-description" id="news-description"></p>
             </div>
             <a class="text-link" href="#catalogo" id="catalog-link"></a>
           </div>
@@ -144,8 +146,8 @@
       <div class="container footer-grid">
         <div>
           <a class="brand footer-brand" href="#inicio">
-            <span class="brand-mark" data-brand-mark>NL</span>
-            <span data-store-name>Nome da Loja</span>
+            <span class="brand-mark" data-brand-mark>PV</span>
+            <span data-store-name>Prime Vitrine</span>
           </a>
           <p id="footer-text"></p>
         </div>
@@ -155,11 +157,13 @@
         </div>
       </div>
       <div class="container copyright">
-        <span>© <span id="current-year"></span> <span data-store-name>Nome da Loja</span>. <span id="footer-rights"></span></span>
+        <span>© <span id="current-year"></span> <span data-store-name>Prime Vitrine</span>. <span id="footer-rights"></span></span>
       </div>
     </footer>
 
     <script src="products.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="firebase-service.js"></script>
     <script src="script.js"></script>
   </body>
 </html>

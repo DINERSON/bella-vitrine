@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin | Prime Vitrine</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="stylesheet" href="admin.css" />
+  </head>
+  <body class="admin-body">
+    <main class="admin-shell">
+      <section class="admin-panel login-view" id="login-view">
+        <a class="brand admin-brand" href="../">
+          <span class="brand-mark">PV</span>
+          <span>Prime Vitrine</span>
+        </a>
+        <p class="eyebrow">Painel administrativo</p>
+        <h1>Entrar no painel</h1>
+        <p class="admin-muted">Cadastre produtos, fotos, preços e status direto pelo celular.</p>
+
+        <div class="admin-alert" id="config-warning" hidden>
+          Firebase ainda não configurado. Preencha o arquivo <strong>firebase-config.js</strong> para liberar o login.
+        </div>
+
+        <form class="admin-form" id="login-form">
+          <label>
+            E-mail
+            <input type="email" name="email" autocomplete="email" required />
+          </label>
+          <label>
+            Senha
+            <input type="password" name="password" autocomplete="current-password" required />
+          </label>
+          <button class="btn btn-primary" type="submit">Entrar</button>
+          <p class="form-message" id="login-message" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <section class="admin-app" id="admin-app" hidden>
+        <header class="admin-topbar">
+          <a class="brand" href="../">
+            <span class="brand-mark">PV</span>
+            <span>Prime Vitrine</span>
+          </a>
+          <div class="admin-top-actions">
+            <a class="btn btn-outline" href="../">Ver site</a>
+            <button class="btn btn-light" type="button" id="logout-button">Sair</button>
+          </div>
+        </header>
+
+        <section class="admin-hero">
+          <div>
+            <p class="eyebrow">Dashboard</p>
+            <h1>Cadastro da loja</h1>
+            <p>Gerencie a vitrine pública sem mexer em código.</p>
+          </div>
+          <a class="btn btn-whatsapp" href="#product-form">Cadastrar produto</a>
+        </section>
+
+        <section class="stats-grid" aria-label="Resumo dos produtos">
+          <article><span id="stat-total">0</span><small>Total de produtos</small></article>
+          <article><span id="stat-available">0</span><small>Disponíveis</small></article>
+          <article><span id="stat-sold">0</span><small>Vendidos</small></article>
+          <article><span id="stat-promo">0</span><small>Em promoção</small></article>
+        </section>
+
+        <section class="admin-card">
+          <div class="admin-section-title">
+            <div>
+              <p class="eyebrow">Produto</p>
+              <h2 id="form-title">Cadastrar produto</h2>
+            </div>
+            <button class="btn btn-outline" type="button" id="clear-form">Limpar</button>
+          </div>
+
+          <form class="product-form" id="product-form">
+            <input type="hidden" name="firestoreId" />
+            <input type="hidden" name="imagem" />
+
+            <label>
+              Código
+              <input name="codigo" placeholder="CM001" required />
+            </label>
+            <label>
+              Nome do produto
+              <input name="nome" placeholder="Camiseta Oversized Preta" required />
+            </label>
+            <label>
+              Categoria
+              <select name="categoria" id="category-select" required></select>
+            </label>
+            <label>
+              Subcategoria
+              <input name="subcategoria" placeholder="Camisetas, Vestidos, Praia..." />
+            </label>
+            <label>
+              Tamanhos
+              <input name="tamanhos" placeholder="P / M / G / GG" />
+            </label>
+            <label>
+              Cor
+              <input name="cor" placeholder="Preta" />
+            </label>
+            <label>
+              Tecido
+              <input name="tecido" placeholder="Algodão premium" />
+            </label>
+            <label>
+              Preço
+              <input name="preco" placeholder="69,90" required />
+            </label>
+            <label>
+              Preço antigo
+              <input name="precoAntigo" placeholder="99,90" />
+            </label>
+            <label>
+              Status
+              <select name="status">
+                <option>Disponível</option>
+                <option>Vendido</option>
+              </select>
+            </label>
+            <label>
+              Foto do produto
+              <input name="foto" type="file" accept="image/*" />
+            </label>
+            <label class="full-field">
+              Descrição
+              <textarea name="descricao" rows="4" placeholder="Descrição curta da peça."></textarea>
+            </label>
+            <div class="check-row">
+              <label><input name="destaque" type="checkbox" /> Mais Vendidos / Destaque</label>
+              <label><input name="promocao" type="checkbox" /> Promoção</label>
+            </div>
+
+            <button class="btn btn-primary full-field" type="submit" id="save-product">Salvar produto</button>
+            <p class="form-message full-field" id="form-message" aria-live="polite"></p>
+          </form>
+        </section>
+
+        <section class="admin-card">
+          <div class="admin-section-title">
+            <div>
+              <p class="eyebrow">Produtos</p>
+              <h2>Lista cadastrada</h2>
+            </div>
+          </div>
+          <div class="admin-product-list" id="admin-product-list"></div>
+        </section>
+      </section>
+    </main>
+
+    <script src="../products.js"></script>
+    <script src="../firebase-config.js"></script>
+    <script src="../firebase-service.js"></script>
+    <script src="admin.js"></script>
+  </body>
+</html>

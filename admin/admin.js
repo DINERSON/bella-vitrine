@@ -1,0 +1,246 @@
+const firebase = window.PrimeFirebase;
+const loginView = document.querySelector("#login-view");
+const adminApp = document.querySelector("#admin-app");
+const loginForm = document.querySelector("#login-form");
+const loginMessage = document.querySelector("#login-message");
+const configWarning = document.querySelector("#config-warning");
+const logoutButton = document.querySelector("#logout-button");
+const productForm = document.querySelector("#product-form");
+const formTitle = document.querySelector("#form-title");
+const formMessage = document.querySelector("#form-message");
+const clearFormButton = document.querySelector("#clear-form");
+const productList = document.querySelector("#admin-product-list");
+const categorySelect = document.querySelector("#category-select");
+
+let products = [];
+
+function isFirebaseReady() {
+  return Boolean(firebase && firebase.isConfigured());
+}
+
+function setMessage(element, text, type = "") {
+  element.textContent = text;
+  element.className = `form-message ${type}`.trim();
+}
+
+function formatPrice(value) {
+  if (!value) return "";
+  return String(value).trim().startsWith("R$") ? value : `R$ ${value}`;
+}
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function fillCategoryOptions() {
+  const productCategories = CATEGORIES.filter((category) => category !== "Mais Vendidos");
+  categorySelect.innerHTML = productCategories
+    .map((category) => `<option value="${escapeHtml(category)}">${escapeHtml(category)}</option>`)
+    .join("");
+}
+
+function productFromForm() {
+  const data = new FormData(productForm);
+  return {
+    firestoreId: data.get("firestoreId"),
+    codigo: data.get("codigo").trim(),
+    nome: data.get("nome").trim(),
+    categoria: data.get("categoria"),
+    subcategoria: data.get("subcategoria").trim(),
+    tamanhos: data.get("tamanhos").trim(),
+    cor: data.get("cor").trim(),
+    tecido: data.get("tecido").trim(),
+    preco: data.get("preco").trim(),
+    precoAntigo: data.get("precoAntigo").trim(),
+    descricao: data.get("descricao").trim(),
+    status: data.get("status"),
+    destaque: data.get("destaque") === "on",
+    promocao: data.get("promocao") === "on",
+    imagem: data.get("imagem"),
+  };
+}
+
+function resetForm() {
+  productForm.reset();
+  productForm.elements.firestoreId.value = "";
+  productForm.elements.imagem.value = "";
+  formTitle.textContent = "Cadastrar produto";
+  setMessage(formMessage, "");
+}
+
+function fillForm(product) {
+  productForm.elements.firestoreId.value = product.firestoreId || product.id;
+  productForm.elements.imagem.value = product.imagem || "";
+  productForm.elements.codigo.value = product.codigo || "";
+  productForm.elements.nome.value = product.nome || "";
+  productForm.elements.categoria.value = product.categoria || "";
+  productForm.elements.subcategoria.value = product.subcategoria || "";
+  productForm.elements.tamanhos.value = product.tamanhos || "";
+  productForm.elements.cor.value = product.cor || "";
+  productForm.elements.tecido.value = product.tecido || "";
+  productForm.elements.preco.value = product.preco || "";
+  productForm.elements.precoAntigo.value = product.precoAntigo || "";
+  productForm.elements.descricao.value = product.descricao || "";
+  productForm.elements.status.value = product.status || "Disponível";
+  productForm.elements.destaque.checked = Boolean(product.destaque);
+  productForm.elements.promocao.checked = Boolean(product.promocao);
+  formTitle.textContent = `Editar ${product.codigo}`;
+  productForm.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function renderStats() {
+  document.querySelector("#stat-total").textContent = products.length;
+  document.querySelector("#stat-available").textContent = products.filter((item) => item.status === "Disponível").length;
+  document.querySelector("#stat-sold").textContent = products.filter((item) => item.status === "Vendido").length;
+  document.querySelector("#stat-promo").textContent = products.filter((item) => item.promocao).length;
+}
+
+function productCard(product) {
+  const id = product.firestoreId || product.id;
+  const image = product.imagem
+    ? `<img src="${escapeHtml(product.imagem)}" alt="${escapeHtml(product.nome)}" onerror="this.closest('.admin-product-image').classList.add('missing'); this.remove();">`
+    : "";
+
+  return `
+    <article class="admin-product" data-id="${escapeHtml(id)}">
+      <div class="admin-product-image ${product.imagem ? "" : "missing"}">
+        ${image}
+        <span>Foto em breve</span>
+      </div>
+      <div class="admin-product-info">
+        <span>${escapeHtml(product.codigo)} · ${escapeHtml(product.categoria)}${product.subcategoria ? ` · ${escapeHtml(product.subcategoria)}` : ""}</span>
+        <h3>${escapeHtml(product.nome)}</h3>
+        <p>${formatPrice(product.preco)} ${product.promocao && product.precoAntigo ? `<del>${formatPrice(product.precoAntigo)}</del>` : ""}</p>
+        <small>Status: ${escapeHtml(product.status)}${product.destaque ? " · Mais Vendidos" : ""}${product.promocao ? " · Promoção" : ""}</small>
+      </div>
+      <div class="admin-product-actions">
+        <button class="btn btn-outline" type="button" data-action="edit">Editar</button>
+        <button class="btn btn-light" type="button" data-action="${product.status === "Vendido" ? "available" : "sold"}">
+          ${product.status === "Vendido" ? "Marcar disponível" : "Marcar vendido"}
+        </button>
+        <button class="btn danger-button" type="button" data-action="delete">Excluir</button>
+      </div>
+    </article>
+  `;
+}
+
+function renderProducts() {
+  renderStats();
+  productList.innerHTML = products.length
+    ? products.map(productCard).join("")
+    : '<div class="empty-state">Nenhum produto cadastrado ainda.</div>';
+}
+
+async function loadProducts() {
+  try {
+    products = await firebase.fetchProducts();
+    renderProducts();
+  } catch (error) {
+    productList.innerHTML = '<div class="empty-state">Não foi possível carregar os produtos agora.</div>';
+  }
+}
+
+async function handleLogin(event) {
+  event.preventDefault();
+  if (!isFirebaseReady()) {
+    setMessage(loginMessage, "Configure o Firebase antes de entrar no painel.", "error");
+    return;
+  }
+
+  const data = new FormData(loginForm);
+  setMessage(loginMessage, "Entrando...");
+
+  try {
+    await firebase.login(data.get("email"), data.get("password"));
+    setMessage(loginMessage, "");
+  } catch (error) {
+    setMessage(loginMessage, "E-mail ou senha inválidos. Confira os dados e tente novamente.", "error");
+  }
+}
+
+async function handleSaveProduct(event) {
+  event.preventDefault();
+  const product = productFromForm();
+  const imageFile = productForm.elements.foto.files[0] || null;
+  const existingId = product.firestoreId || null;
+
+  setMessage(formMessage, "Salvando produto...");
+  productForm.querySelector("#save-product").disabled = true;
+
+  try {
+    await firebase.saveProduct(product, imageFile, existingId);
+    setMessage(formMessage, "Produto salvo com sucesso.", "success");
+    resetForm();
+    await loadProducts();
+  } catch (error) {
+    setMessage(formMessage, "Não foi possível salvar. Confira sua internet e tente novamente.", "error");
+  } finally {
+    productForm.querySelector("#save-product").disabled = false;
+  }
+}
+
+async function handleProductAction(event) {
+  const button = event.target.closest("[data-action]");
+  if (!button) return;
+
+  const card = button.closest("[data-id]");
+  const id = card.dataset.id;
+  const product = products.find((item) => (item.firestoreId || item.id) === id);
+  if (!product) return;
+
+  const action = button.dataset.action;
+
+  if (action === "edit") {
+    fillForm(product);
+    return;
+  }
+
+  try {
+    button.disabled = true;
+    if (action === "sold") await firebase.updateProductStatus(id, "Vendido");
+    if (action === "available") await firebase.updateProductStatus(id, "Disponível");
+    if (action === "delete") {
+      const confirmed = window.confirm(`Excluir ${product.codigo} - ${product.nome}?`);
+      if (!confirmed) return;
+      await firebase.deleteProduct(id);
+    }
+    await loadProducts();
+  } catch (error) {
+    window.alert("Não foi possível concluir a ação. Tente novamente.");
+  } finally {
+    button.disabled = false;
+  }
+}
+
+function showLoggedIn() {
+  loginView.hidden = true;
+  adminApp.hidden = false;
+  loadProducts();
+}
+
+function showLoggedOut() {
+  loginView.hidden = false;
+  adminApp.hidden = true;
+}
+
+fillCategoryOptions();
+configWarning.hidden = isFirebaseReady();
+loginForm.addEventListener("submit", handleLogin);
+productForm.addEventListener("submit", handleSaveProduct);
+clearFormButton.addEventListener("click", resetForm);
+productList.addEventListener("click", handleProductAction);
+logoutButton.addEventListener("click", () => firebase.logout());
+
+if (isFirebaseReady()) {
+  firebase.watchAuth((user) => {
+    if (user) showLoggedIn();
+    else showLoggedOut();
+  });
+} else {
+  showLoggedOut();
+}
