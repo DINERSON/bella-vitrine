@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta id="meta-description" name="description" content="" />
+    <title>Catálogo de Moda Feminina</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header" id="inicio">
+      <nav class="nav container" aria-label="Menu principal">
+        <a class="brand" href="#inicio" id="header-brand">
+          <span class="brand-mark" id="brand-mark">NL</span>
+          <span data-store-name>Nome da Loja</span>
+        </a>
+
+        <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-menu">
+          <span></span>
+          <span></span>
+          <span></span>
+          <span class="sr-only">Abrir menu</span>
+        </button>
+
+        <div class="nav-links" id="main-menu"></div>
+
+        <a class="header-whatsapp" data-whatsapp-general href="#" target="_blank" rel="noopener"></a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero section-band">
+        <div class="container hero-grid">
+          <div class="hero-copy">
+            <p class="eyebrow" id="hero-eyebrow"></p>
+            <h1 id="hero-title"></h1>
+            <p id="hero-subtitle"></p>
+            <div class="hero-actions">
+              <a class="btn btn-primary" href="#catalogo" id="hero-catalog-button"></a>
+              <a class="btn btn-whatsapp" data-whatsapp-general href="#" target="_blank" rel="noopener"></a>
+            </div>
+            <div class="hero-badges" id="hero-badges" aria-label="Destaques da loja"></div>
+          </div>
+
+          <div class="hero-media" aria-label="Banner de moda feminina">
+            <img id="hero-image" src="assets/hero/moda-feminina.jpg" alt="" />
+            <div class="hero-card">
+              <strong id="hero-card-title"></strong>
+              <span id="hero-card-text"></span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="categorias-title">
+        <div class="container">
+          <div class="section-heading">
+            <p class="eyebrow" id="categories-eyebrow"></p>
+            <h2 id="categorias-title"></h2>
+          </div>
+          <div class="category-grid" id="category-grid"></div>
+        </div>
+      </section>
+
+      <section class="section section-soft" id="novidades" aria-labelledby="novidades-title">
+        <div class="container">
+          <div class="section-heading split-heading">
+            <div>
+              <p class="eyebrow" id="news-eyebrow"></p>
+              <h2 id="novidades-title"></h2>
+            </div>
+            <a class="text-link" href="#catalogo" id="catalog-link"></a>
+          </div>
+          <div class="product-grid" id="featured-products"></div>
+        </div>
+      </section>
+
+      <section class="section" id="catalogo" aria-labelledby="catalogo-title">
+        <div class="container">
+          <div class="section-heading">
+            <p class="eyebrow" id="catalog-eyebrow"></p>
+            <h2 id="catalogo-title"></h2>
+            <p class="section-description" id="catalog-description"></p>
+          </div>
+
+          <div class="filter-bar" id="filter-bar" aria-label="Filtros do catálogo"></div>
+          <div class="catalog-feedback" id="catalog-feedback" aria-live="polite"></div>
+          <div class="product-grid" id="catalog-products"></div>
+        </div>
+      </section>
+
+      <section class="section promo-section" id="promocoes" aria-labelledby="promocoes-title">
+        <div class="container">
+          <div class="promo-banner">
+            <div>
+              <p class="eyebrow" id="promo-eyebrow"></p>
+              <h2 id="promocoes-title"></h2>
+              <p id="promo-text"></p>
+            </div>
+            <a class="btn btn-light" href="#catalogo" data-filter-link="Promoções" id="promo-action"></a>
+          </div>
+          <div class="product-grid" id="promo-products"></div>
+        </div>
+      </section>
+
+      <section class="section" id="looks" aria-labelledby="looks-title">
+        <div class="container">
+          <div class="section-heading">
+            <p class="eyebrow" id="looks-eyebrow"></p>
+            <h2 id="looks-title"></h2>
+          </div>
+          <div class="look-grid" id="look-grid"></div>
+        </div>
+      </section>
+
+      <section class="section section-soft" id="contato" aria-labelledby="contato-title">
+        <div class="container contact-grid">
+          <div>
+            <p class="eyebrow" id="contact-eyebrow"></p>
+            <h2 id="contato-title"></h2>
+            <p id="contact-text"></p>
+            <div class="contact-actions">
+              <a class="btn btn-whatsapp" data-whatsapp-general href="#" target="_blank" rel="noopener"></a>
+              <a class="btn btn-outline" id="instagram-link" href="#" target="_blank" rel="noopener"></a>
+            </div>
+          </div>
+
+          <div class="contact-card">
+            <h3 id="contact-card-title"></h3>
+            <ul>
+              <li><strong>WhatsApp:</strong> <span id="contact-whatsapp"></span></li>
+              <li><strong>Instagram:</strong> <span id="contact-instagram"></span></li>
+              <li><strong>Cidade:</strong> <span id="contact-city"></span></li>
+              <li><strong>Pagamento:</strong> <span id="contact-payment"></span></li>
+              <li><strong>Entrega:</strong> <span id="contact-delivery"></span></li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-grid">
+        <div>
+          <a class="brand footer-brand" href="#inicio">
+            <span class="brand-mark" data-brand-mark>NL</span>
+            <span data-store-name>Nome da Loja</span>
+          </a>
+          <p id="footer-text"></p>
+        </div>
+        <div class="footer-links">
+          <a id="footer-instagram" href="#" target="_blank" rel="noopener">Instagram</a>
+          <a data-whatsapp-general href="#" target="_blank" rel="noopener">WhatsApp</a>
+        </div>
+      </div>
+      <div class="container copyright">
+        <span>© <span id="current-year"></span> <span data-store-name>Nome da Loja</span>. <span id="footer-rights"></span></span>
+      </div>
+    </footer>
+
+    <script src="products.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
