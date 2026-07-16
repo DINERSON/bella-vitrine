@@ -399,8 +399,8 @@ async function handleSaveProduct(event) {
 
   try {
     await firebase.saveProduct(product, imageFiles, existingId);
-    setMessage(formMessage, "Produto salvo com sucesso.", "success");
     resetForm();
+    setMessage(formMessage, "Produto salvo com sucesso.", "success");
     await loadProducts();
   } catch (error) {
     setMessage(formMessage, "Não foi possível salvar. Confira sua internet e tente novamente.", "error");

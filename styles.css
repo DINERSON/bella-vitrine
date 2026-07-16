@@ -1694,8 +1694,10 @@ h2 {
 
   .brand {
     grid-column: 2;
+    grid-row: 1;
     justify-self: end;
     gap: 10px;
+    transform: translateY(4px);
   }
 
   .brand-mark {
@@ -1712,6 +1714,7 @@ h2 {
   .menu-toggle {
     display: block;
     grid-column: 1;
+    grid-row: 1;
     justify-self: start;
     position: relative;
     z-index: 35;
