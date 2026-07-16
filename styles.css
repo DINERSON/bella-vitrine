@@ -244,8 +244,8 @@ input {
   z-index: 24;
   display: none;
   border: 0;
-  background: rgba(3, 6, 12, 0.58);
-  backdrop-filter: blur(7px);
+  background: rgba(3, 6, 12, 0.74);
+  backdrop-filter: blur(5px);
   cursor: pointer;
   opacity: 0;
   transition: opacity 0.22s ease;
@@ -1727,6 +1727,12 @@ h2 {
       inset 0 0 0 1px rgba(255, 255, 255, 0.04);
   }
 
+  body.menu-open .menu-toggle {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-8px);
+  }
+
   .nav-links {
     position: fixed;
     top: 0;
@@ -1746,9 +1752,9 @@ h2 {
     border-right: 1px solid rgba(56, 189, 248, 0.3);
     border-radius: 0 24px 24px 0;
     background:
-      radial-gradient(circle at top left, rgba(56, 189, 248, 0.18), transparent 14rem),
-      radial-gradient(circle at bottom right, rgba(201, 162, 39, 0.12), transparent 13rem),
-      linear-gradient(180deg, rgba(10, 15, 26, 0.96), rgba(5, 7, 11, 0.98));
+      radial-gradient(circle at top left, rgba(37, 99, 235, 0.18), transparent 13rem),
+      radial-gradient(circle at bottom right, rgba(201, 162, 39, 0.1), transparent 12rem),
+      linear-gradient(180deg, rgba(5, 10, 20, 0.99), rgba(4, 7, 14, 0.99));
     box-shadow:
       24px 0 80px rgba(0, 0, 0, 0.62),
       inset 0 0 0 1px rgba(255, 255, 255, 0.04);
@@ -1774,6 +1780,7 @@ h2 {
     min-height: 78px;
     padding: 16px;
     border-bottom: 1px solid rgba(51, 65, 85, 0.74);
+    background: rgba(3, 8, 18, 0.72);
   }
 
   .drawer-brand-mark {
@@ -1797,7 +1804,7 @@ h2 {
     place-items: center;
     border: 1px solid rgba(230, 193, 90, 0.28);
     border-radius: 12px;
-    background: rgba(15, 23, 42, 0.76);
+    background: rgba(15, 23, 42, 0.96);
     color: #fff;
     font-size: 1.45rem;
     line-height: 1;
@@ -1823,7 +1830,7 @@ h2 {
     border-bottom: 1px solid rgba(51, 65, 85, 0.7);
     border-radius: 0;
     background: transparent;
-    color: rgba(241, 245, 249, 0.9);
+    color: rgba(241, 245, 249, 0.94);
     font-size: 0.98rem;
     letter-spacing: 0.01em;
     box-shadow: none;
@@ -1843,22 +1850,24 @@ h2 {
     box-shadow: none;
   }
 
-  .nav-mobile-whatsapp {
+  .nav-links .nav-mobile-whatsapp {
     display: flex;
     min-height: 54px;
     align-items: center;
     justify-content: center;
-    margin: 10px 16px 18px;
+    margin: 12px 16px calc(20px + env(safe-area-inset-bottom));
     border-radius: 999px;
-    border-color: rgba(37, 211, 102, 0.42);
-    background: linear-gradient(135deg, var(--whatsapp), #65e69c);
+    border: 1px solid rgba(37, 211, 102, 0.7);
+    background: #25d366;
     color: #061109;
     font-size: 1rem;
     font-weight: 900;
-    box-shadow: 0 16px 34px rgba(37, 211, 102, 0.18);
+    box-shadow:
+      0 18px 38px rgba(37, 211, 102, 0.28),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.24);
   }
 
-  .nav-mobile-whatsapp::after {
+  .nav-links .nav-mobile-whatsapp::after {
     color: rgba(6, 17, 9, 0.7);
   }
 
@@ -1898,11 +1907,12 @@ h2 {
     padding: 0;
   }
 
-  .nav-mobile-whatsapp {
+  .nav-links .nav-mobile-whatsapp {
     min-height: 54px;
   }
 
-  .nav-mobile-whatsapp:hover {
+  .nav-links .nav-mobile-whatsapp:hover {
+    background: #25d366;
     color: #061109;
   }
 
