@@ -98,10 +98,36 @@
               Subcategoria
               <input name="subcategoria" placeholder="Camisetas, Vestidos, Praia..." />
             </label>
-            <label>
-              Tamanhos
-              <input name="tamanhos" placeholder="P / M / G / GG" />
-            </label>
+            <fieldset class="stock-fieldset full-field">
+              <legend>Tamanhos e estoque</legend>
+              <p class="admin-muted">Deixe vazio para não mostrar o tamanho. Use 0 para mostrar como esgotado.</p>
+              <div class="stock-grid">
+                <label>
+                  P
+                  <input name="stock_P" type="number" min="0" step="1" placeholder="0" />
+                </label>
+                <label>
+                  M
+                  <input name="stock_M" type="number" min="0" step="1" placeholder="0" />
+                </label>
+                <label>
+                  G
+                  <input name="stock_G" type="number" min="0" step="1" placeholder="0" />
+                </label>
+                <label>
+                  GG
+                  <input name="stock_GG" type="number" min="0" step="1" placeholder="0" />
+                </label>
+                <label>
+                  XG
+                  <input name="stock_XG" type="number" min="0" step="1" placeholder="0" />
+                </label>
+                <label>
+                  Único
+                  <input name="stock_Unico" type="number" min="0" step="1" placeholder="0" />
+                </label>
+              </div>
+            </fieldset>
             <label>
               Cor
               <input name="cor" placeholder="Preta" />

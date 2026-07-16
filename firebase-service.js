@@ -66,7 +66,7 @@ function normalizeProduct(docSnapshot) {
     nome: data.nome || "",
     categoria: data.categoria || "",
     subcategoria: data.subcategoria || "",
-    tamanhos: data.tamanhos || "",
+    tamanhos: data.tamanhos || data.sizesStock || "",
     cor: data.cor || "",
     tecido: data.tecido || "",
     preco: data.preco || "",

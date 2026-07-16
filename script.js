@@ -45,17 +45,6 @@ function formatPrice(value) {
   return String(value).trim().startsWith("R$") ? value : `R$ ${value}`;
 }
 
-function productMessage(product) {
-  return replaceVars(STORE_CONFIG.whatsappProductMessage, {
-    codigo: product.codigo,
-    nome: product.nome,
-  });
-}
-
-function isSold(product) {
-  return String(product.status || "").toLowerCase() === "vendido";
-}
-
 function escapeHtml(value) {
   return String(value || "")
     .replace(/&/g, "&amp;")
@@ -63,6 +52,107 @@ function escapeHtml(value) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
+}
+
+function normalizeSizes(product) {
+  const value = product?.tamanhos;
+
+  if (Array.isArray(value)) {
+    return value
+      .map((size) => {
+        if (typeof size === "string") return { label: size.trim(), estoque: 1 };
+        return {
+          label: String(size.label || size.tamanho || "").trim(),
+          estoque: Number.isFinite(Number(size.estoque)) ? Math.max(0, Number(size.estoque)) : 0,
+        };
+      })
+      .filter((size) => size.label);
+  }
+
+  if (value && typeof value === "object") {
+    return Object.entries(value)
+      .map(([label, estoque]) => ({
+        label: String(label).trim(),
+        estoque: Number.isFinite(Number(estoque)) ? Math.max(0, Number(estoque)) : 0,
+      }))
+      .filter((size) => size.label);
+  }
+
+  return String(value || "")
+    .split(/[\/,|]+/)
+    .map((label) => label.trim())
+    .filter(Boolean)
+    .map((label) => ({ label, estoque: 1 }));
+}
+
+function productHasAvailableSize(product) {
+  const sizes = normalizeSizes(product);
+  return !sizes.length || sizes.some((size) => size.estoque > 0);
+}
+
+function isSold(product) {
+  const status = String(product.status || "").toLowerCase();
+  return status === "vendido" || status === "esgotado" || !productHasAvailableSize(product);
+}
+
+function productStatusLabel(product) {
+  return isSold(product) ? "Esgotado" : product.status || "Disponível";
+}
+
+function productMessage(product, selectedSize = "") {
+  if (selectedSize) {
+    return `Olá, tenho interesse no produto ${product.codigo} - ${product.nome}, tamanho ${selectedSize}. Está disponível?`;
+  }
+
+  return replaceVars(STORE_CONFIG.whatsappProductMessage, {
+    codigo: product.codigo,
+    nome: product.nome,
+  });
+}
+
+function productCardId(product) {
+  return String(product.firestoreId || product.id || product.codigo || "");
+}
+
+function findProductByCardId(id) {
+  return visibleProducts.find((product) => productCardId(product) === id);
+}
+
+function sizeSummary(product) {
+  const sizes = normalizeSizes(product);
+  if (!sizes.length) return "";
+  return sizes.map((size) => size.label).join(" / ");
+}
+
+function renderSizeOptions(product, sold) {
+  const sizes = normalizeSizes(product);
+  if (!sizes.length) return "";
+
+  const options = sizes
+    .map((size) => {
+      const available = size.estoque > 0 && !sold;
+      const title = available ? `${size.estoque} em estoque` : "Esgotado";
+      return `
+        <button
+          class="size-option ${available ? "" : "is-empty"}"
+          type="button"
+          data-size="${escapeHtml(size.label)}"
+          ${available ? "" : "disabled"}
+          aria-label="Tamanho ${escapeHtml(size.label)} - ${escapeHtml(title)}"
+          title="${escapeHtml(title)}"
+        >
+          ${escapeHtml(size.label)}
+        </button>
+      `;
+    })
+    .join("");
+
+  return `
+    <div class="size-selector" aria-label="Escolha o tamanho">
+      <span>Tamanho</span>
+      <div class="size-options">${options}</div>
+    </div>
+  `;
 }
 
 function slugify(value) {
@@ -114,20 +204,27 @@ function imageMarkup(src, alt) {
 function renderProductCard(product) {
   const sold = isSold(product);
   const theme = getTheme(product);
+  const sizes = normalizeSizes(product);
+  const hasSizes = sizes.length > 0;
+  const cardId = productCardId(product);
+  const statusLabel = productStatusLabel(product);
   const summerBadge = product.categoria === "Moda Verão" ? '<span class="badge badge-summer">Verão</span>' : "";
   const price = product.promocao
     ? `<div class="price-row"><span class="old-price">${formatPrice(product.precoAntigo)}</span><strong>${formatPrice(product.preco)}</strong></div>`
     : `<div class="price-row"><strong>${formatPrice(product.preco)}</strong></div>`;
   const action = sold
-    ? `<button class="btn product-buy btn-disabled" type="button" disabled>${SITE_CONTENT.buttons.sold}</button>`
-    : `<a class="btn product-buy btn-whatsapp" href="${whatsappUrl(productMessage(product))}" target="_blank" rel="noopener">${SITE_CONTENT.buttons.buyWhatsapp}</a>`;
+    ? `<button class="btn product-buy btn-disabled" type="button" disabled aria-label="Produto indisponível ${escapeHtml(product.codigo)} - ${escapeHtml(product.nome)}">Indisponível</button>`
+    : hasSizes
+      ? `<button class="btn product-buy btn-whatsapp product-buy-size" type="button" data-product-id="${escapeHtml(cardId)}" aria-label="${SITE_CONTENT.buttons.buyWhatsapp} ${escapeHtml(product.codigo)} - ${escapeHtml(product.nome)}">Comprar</button>`
+      : `<a class="btn product-buy btn-whatsapp" href="${whatsappUrl(productMessage(product))}" target="_blank" rel="noopener" aria-label="${SITE_CONTENT.buttons.buyWhatsapp} ${escapeHtml(product.codigo)} - ${escapeHtml(product.nome)}">Comprar</a>`;
 
   return `
-    <article class="product-card theme-${theme}">
+    <article class="product-card theme-${theme} ${sold ? "is-sold-out" : ""}" data-product-id="${escapeHtml(cardId)}">
       <div class="product-image">
         ${imageMarkup(product.imagem, product.nome)}
+        ${sold ? '<span class="sold-overlay">Esgotado</span>' : ""}
         ${product.promocao ? '<span class="badge badge-promo">Promoção</span>' : summerBadge}
-        <span class="badge badge-status ${sold ? "sold" : "available"}">${escapeHtml(product.status || "Disponível")}</span>
+        <span class="badge badge-status ${sold ? "sold" : "available"}">${escapeHtml(statusLabel)}</span>
       </div>
       <div class="product-info">
         <span class="product-code">${escapeHtml(product.codigo)}</span>
@@ -136,11 +233,13 @@ function renderProductCard(product) {
         <dl>
           <div><dt>Categoria</dt><dd>${escapeHtml(product.categoria)}</dd></div>
           <div><dt>Subcategoria</dt><dd>${escapeHtml(product.subcategoria || "-")}</dd></div>
-          <div><dt>Tamanho</dt><dd>${escapeHtml(product.tamanhos)}</dd></div>
+          <div><dt>Tamanho</dt><dd>${escapeHtml(sizeSummary(product))}</dd></div>
           <div><dt>Cor</dt><dd>${escapeHtml(product.cor)}</dd></div>
           <div><dt>Tecido</dt><dd>${escapeHtml(product.tecido)}</dd></div>
         </dl>
+        ${renderSizeOptions(product, sold)}
         ${price}
+        <p class="size-warning" aria-live="polite"></p>
         ${action}
       </div>
     </article>
@@ -383,6 +482,44 @@ function setupPromoLinks() {
   });
 }
 
+function setupProductInteractions() {
+  document.addEventListener("click", (event) => {
+    const sizeButton = event.target.closest(".size-option");
+    if (sizeButton && !sizeButton.disabled) {
+      const card = sizeButton.closest(".product-card");
+      card.querySelectorAll(".size-option").forEach((button) => {
+        button.classList.remove("selected");
+        button.setAttribute("aria-pressed", "false");
+      });
+      sizeButton.classList.add("selected");
+      sizeButton.setAttribute("aria-pressed", "true");
+      card.dataset.selectedSize = sizeButton.dataset.size;
+      const warning = card.querySelector(".size-warning");
+      if (warning) warning.textContent = "";
+      card.querySelector(".size-options")?.classList.remove("needs-choice");
+      return;
+    }
+
+    const buyButton = event.target.closest(".product-buy-size");
+    if (!buyButton) return;
+
+    const card = buyButton.closest(".product-card");
+    const selectedSize = card.dataset.selectedSize;
+    const warning = card.querySelector(".size-warning");
+
+    if (!selectedSize) {
+      if (warning) warning.textContent = "Escolha um tamanho antes de comprar.";
+      card.querySelector(".size-options")?.classList.add("needs-choice");
+      return;
+    }
+
+    const product = findProductByCardId(buyButton.dataset.productId);
+    if (!product) return;
+
+    window.open(whatsappUrl(productMessage(product, selectedSize)), "_blank", "noopener");
+  });
+}
+
 async function loadFirebaseProducts() {
   const firebase = window.PrimeFirebase;
 
@@ -409,6 +546,7 @@ renderMenu();
 applyStoreConfig();
 setupMenu();
 setupPromoLinks();
+setupProductInteractions();
 renderCategories();
 renderAllProductSections();
 renderLooks();

@@ -14,6 +14,15 @@ const categorySelect = document.querySelector("#category-select");
 
 let products = [];
 
+const STOCK_FIELDS = [
+  { label: "P", field: "stock_P" },
+  { label: "M", field: "stock_M" },
+  { label: "G", field: "stock_G" },
+  { label: "GG", field: "stock_GG" },
+  { label: "XG", field: "stock_XG" },
+  { label: "Único", field: "stock_Unico" },
+];
+
 function isFirebaseReady() {
   return Boolean(firebase && firebase.isConfigured());
 }
@@ -37,6 +46,76 @@ function escapeHtml(value) {
     .replace(/'/g, "&#039;");
 }
 
+function normalizeSizes(product) {
+  const value = product?.tamanhos;
+
+  if (Array.isArray(value)) {
+    return value
+      .map((size) => {
+        if (typeof size === "string") return { label: size.trim(), estoque: 1 };
+        return {
+          label: String(size.label || size.tamanho || "").trim(),
+          estoque: Number.isFinite(Number(size.estoque)) ? Math.max(0, Number(size.estoque)) : 0,
+        };
+      })
+      .filter((size) => size.label);
+  }
+
+  if (value && typeof value === "object") {
+    return Object.entries(value)
+      .map(([label, estoque]) => ({
+        label: String(label).trim(),
+        estoque: Number.isFinite(Number(estoque)) ? Math.max(0, Number(estoque)) : 0,
+      }))
+      .filter((size) => size.label);
+  }
+
+  return String(value || "")
+    .split(/[\/,|]+/)
+    .map((label) => label.trim())
+    .filter(Boolean)
+    .map((label) => ({ label, estoque: 1 }));
+}
+
+function isUnavailable(product) {
+  const status = String(product.status || "").toLowerCase();
+  const sizes = normalizeSizes(product);
+  return status === "vendido" || status === "esgotado" || (sizes.length > 0 && sizes.every((size) => size.estoque <= 0));
+}
+
+function sizesFromForm(data) {
+  return STOCK_FIELDS.map(({ label, field }) => {
+    const rawValue = String(data.get(field) || "").trim();
+    if (rawValue === "") return null;
+    return {
+      label,
+      estoque: Math.max(0, Number(rawValue) || 0),
+    };
+  }).filter(Boolean);
+}
+
+function clearStockFields() {
+  STOCK_FIELDS.forEach(({ field }) => {
+    productForm.elements[field].value = "";
+  });
+}
+
+function fillStockFields(product) {
+  clearStockFields();
+  normalizeSizes(product).forEach((size) => {
+    const field = STOCK_FIELDS.find((item) => item.label.toLowerCase() === size.label.toLowerCase())?.field;
+    if (field && productForm.elements[field]) {
+      productForm.elements[field].value = size.estoque;
+    }
+  });
+}
+
+function sizesSummary(product) {
+  const sizes = normalizeSizes(product);
+  if (!sizes.length) return "Sem controle de tamanho";
+  return sizes.map((size) => `${size.label}: ${size.estoque}`).join(" · ");
+}
+
 function fillCategoryOptions() {
   const productCategories = CATEGORIES.filter((category) => category !== "Mais Vendidos");
   categorySelect.innerHTML = productCategories
@@ -52,7 +131,7 @@ function productFromForm() {
     nome: data.get("nome").trim(),
     categoria: data.get("categoria"),
     subcategoria: data.get("subcategoria").trim(),
-    tamanhos: data.get("tamanhos").trim(),
+    tamanhos: sizesFromForm(data),
     cor: data.get("cor").trim(),
     tecido: data.get("tecido").trim(),
     preco: data.get("preco").trim(),
@@ -67,6 +146,7 @@ function productFromForm() {
 
 function resetForm() {
   productForm.reset();
+  clearStockFields();
   productForm.elements.firestoreId.value = "";
   productForm.elements.imagem.value = "";
   formTitle.textContent = "Cadastrar produto";
@@ -80,7 +160,7 @@ function fillForm(product) {
   productForm.elements.nome.value = product.nome || "";
   productForm.elements.categoria.value = product.categoria || "";
   productForm.elements.subcategoria.value = product.subcategoria || "";
-  productForm.elements.tamanhos.value = product.tamanhos || "";
+  fillStockFields(product);
   productForm.elements.cor.value = product.cor || "";
   productForm.elements.tecido.value = product.tecido || "";
   productForm.elements.preco.value = product.preco || "";
@@ -95,8 +175,8 @@ function fillForm(product) {
 
 function renderStats() {
   document.querySelector("#stat-total").textContent = products.length;
-  document.querySelector("#stat-available").textContent = products.filter((item) => item.status === "Disponível").length;
-  document.querySelector("#stat-sold").textContent = products.filter((item) => item.status === "Vendido").length;
+  document.querySelector("#stat-available").textContent = products.filter((item) => !isUnavailable(item)).length;
+  document.querySelector("#stat-sold").textContent = products.filter(isUnavailable).length;
   document.querySelector("#stat-promo").textContent = products.filter((item) => item.promocao).length;
 }
 
@@ -116,7 +196,8 @@ function productCard(product) {
         <span>${escapeHtml(product.codigo)} · ${escapeHtml(product.categoria)}${product.subcategoria ? ` · ${escapeHtml(product.subcategoria)}` : ""}</span>
         <h3>${escapeHtml(product.nome)}</h3>
         <p>${formatPrice(product.preco)} ${product.promocao && product.precoAntigo ? `<del>${formatPrice(product.precoAntigo)}</del>` : ""}</p>
-        <small>Status: ${escapeHtml(product.status)}${product.destaque ? " · Mais Vendidos" : ""}${product.promocao ? " · Promoção" : ""}</small>
+        <small>Status: ${escapeHtml(isUnavailable(product) ? "Esgotado" : product.status)}${product.destaque ? " · Mais Vendidos" : ""}${product.promocao ? " · Promoção" : ""}</small>
+        <small>Estoque: ${escapeHtml(sizesSummary(product))}</small>
       </div>
       <div class="admin-product-actions">
         <button class="btn btn-outline" type="button" data-action="edit">Editar</button>
