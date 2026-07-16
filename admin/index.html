@@ -156,8 +156,25 @@
             </label>
             <label>
               Subcategoria
-              <input name="subcategoria" placeholder="Camisetas, Vestidos, Praia..." />
+              <input name="subcategoria" list="subcategory-options" placeholder="Camisetas, Vestidos, Praia..." />
             </label>
+            <datalist id="subcategory-options">
+              <option value="Camisetas"></option>
+              <option value="Camisas"></option>
+              <option value="Blusas"></option>
+              <option value="Vestidos"></option>
+              <option value="Calcas"></option>
+              <option value="Bermudas"></option>
+              <option value="Shorts"></option>
+              <option value="Saias"></option>
+              <option value="Jaquetas"></option>
+              <option value="Conjuntos"></option>
+              <option value="Praia"></option>
+              <option value="Bones"></option>
+              <option value="Bolsas"></option>
+              <option value="Oculos"></option>
+              <option value="Outros"></option>
+            </datalist>
             <fieldset class="stock-fieldset full-field">
               <legend>Tamanhos e estoque</legend>
               <p class="admin-muted">Deixe vazio para não mostrar o tamanho. Use 0 para mostrar como esgotado.</p>
@@ -228,6 +245,9 @@
               Foto 4 (upload)
               <input name="foto4" type="file" accept="image/*" />
             </label>
+            <p class="admin-muted full-field">
+              Se o Firebase Storage ainda nao estiver ativado, use os campos de URL abaixo para salvar as fotos.
+            </p>
             <label>
               Imagem principal (URL)
               <input name="imagemPrincipal" placeholder="fotos/camiseta-frente.jpg" />
@@ -244,6 +264,7 @@
               Foto 4 (URL)
               <input name="imagem4" placeholder="fotos/camiseta-look.jpg" />
             </label>
+            <div class="image-preview-grid full-field" id="image-preview-grid" aria-label="Previa das fotos do produto"></div>
             <label class="full-field">
               Descrição
               <textarea name="descricao" rows="4" placeholder="Descrição curta da peça."></textarea>
@@ -265,6 +286,24 @@
               <p class="eyebrow">Produtos</p>
               <h2>Lista cadastrada</h2>
             </div>
+            <button class="btn btn-outline" type="button" id="refresh-products">Atualizar lista</button>
+          </div>
+          <div class="admin-list-tools">
+            <label>
+              Buscar produto
+              <input id="admin-search" type="search" placeholder="Codigo, nome ou categoria" />
+            </label>
+            <label>
+              Filtrar lista
+              <select id="admin-status-filter">
+                <option value="Todos">Todos</option>
+                <option value="Disponivel">Disponiveis</option>
+                <option value="Vendido">Vendidos</option>
+                <option value="Esgotado">Esgotados</option>
+                <option value="Promocao">Promocoes</option>
+                <option value="MaisVendidos">Mais vendidos</option>
+              </select>
+            </label>
           </div>
           <div class="admin-product-list" id="admin-product-list"></div>
         </section>

@@ -14,6 +14,10 @@ const categorySelect = document.querySelector("#category-select");
 const storeConfigForm = document.querySelector("#store-config-form");
 const storeConfigMessage = document.querySelector("#store-config-message");
 const saveStoreConfigButton = document.querySelector("#save-store-config");
+const adminSearch = document.querySelector("#admin-search");
+const adminStatusFilter = document.querySelector("#admin-status-filter");
+const refreshProductsButton = document.querySelector("#refresh-products");
+const imagePreviewGrid = document.querySelector("#image-preview-grid");
 
 let products = [];
 
@@ -214,6 +218,33 @@ function clearImageFields() {
   });
 }
 
+function renderImagePreview() {
+  if (!imagePreviewGrid) return;
+
+  const urlImages = imagesFromForm(new FormData(productForm));
+  const fileImages = ["foto1", "foto2", "foto3", "foto4"]
+    .map((field) => productForm.elements[field]?.files?.[0])
+    .filter(Boolean)
+    .map((file) => URL.createObjectURL(file));
+  const images = [...fileImages, ...urlImages].slice(0, 4);
+
+  imagePreviewGrid.innerHTML = Array.from({ length: 4 })
+    .map((_, index) => {
+      const image = images[index];
+      if (!image) {
+        return `<div class="image-preview-card missing"><span>Foto ${index + 1}</span></div>`;
+      }
+
+      return `
+        <div class="image-preview-card">
+          <img src="${escapeHtml(image)}" alt="Previa da foto ${index + 1}" onerror="this.closest('.image-preview-card').classList.add('missing'); this.remove();">
+          <span>Foto ${index + 1}</span>
+        </div>
+      `;
+    })
+    .join("");
+}
+
 function fillImageFields(product) {
   clearImageFields();
   const images = normalizeImages(product);
@@ -267,6 +298,7 @@ function resetForm() {
   });
   formTitle.textContent = "Cadastrar produto";
   setMessage(formMessage, "");
+  renderImagePreview();
 }
 
 function fillForm(product) {
@@ -288,6 +320,7 @@ function fillForm(product) {
   productForm.elements.maisVendido.checked = Boolean(product.maisVendido || product.destaque);
   productForm.elements.promocao.checked = Boolean(product.promocao);
   formTitle.textContent = `Editar ${product.codigo}`;
+  renderImagePreview();
   productForm.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
@@ -296,6 +329,28 @@ function renderStats() {
   document.querySelector("#stat-available").textContent = products.filter((item) => !isUnavailable(item)).length;
   document.querySelector("#stat-sold").textContent = products.filter(isUnavailable).length;
   document.querySelector("#stat-promo").textContent = products.filter((item) => item.promocao).length;
+}
+
+function filteredProducts() {
+  const search = normalizeKey(adminSearch?.value || "");
+  const statusFilter = adminStatusFilter?.value || "Todos";
+
+  return products.filter((product) => {
+    const haystack = normalizeKey(
+      [product.codigo, product.nome, product.categoria, product.subcategoria, product.cor, product.tecido].join(" ")
+    );
+    const unavailable = isUnavailable(product);
+    const matchesSearch = !search || haystack.includes(search);
+    const matchesStatus =
+      statusFilter === "Todos" ||
+      (statusFilter === "Disponivel" && !unavailable) ||
+      (statusFilter === "Vendido" && String(product.status || "").toLowerCase() === "vendido") ||
+      (statusFilter === "Esgotado" && unavailable) ||
+      (statusFilter === "Promocao" && product.promocao) ||
+      (statusFilter === "MaisVendidos" && (product.maisVendido || product.destaque));
+
+    return matchesSearch && matchesStatus;
+  });
 }
 
 function productCard(product) {
@@ -343,12 +398,14 @@ function productCard(product) {
 
 function renderProducts() {
   renderStats();
-  productList.innerHTML = products.length
-    ? products.map(productCard).join("")
-    : '<div class="empty-state">Nenhum produto cadastrado ainda.</div>';
+  const listedProducts = filteredProducts();
+  productList.innerHTML = listedProducts.length
+    ? listedProducts.map(productCard).join("")
+    : '<div class="empty-state">Nenhum produto encontrado para esse filtro.</div>';
 }
 
 async function loadProducts() {
+  productList.innerHTML = '<div class="empty-state">Carregando produtos...</div>';
   try {
     products = await firebase.fetchProducts();
     renderProducts();
@@ -423,6 +480,7 @@ async function handleSaveStoreConfig(event) {
   try {
     await firebase.saveStoreConfig(storeConfigFromForm());
     setMessage(storeConfigMessage, "Configuracoes salvas. A vitrine publica sera atualizada automaticamente.", "success");
+    await loadStoreConfig();
   } catch (error) {
     setMessage(storeConfigMessage, "Nao foi possivel salvar as configuracoes. Tente novamente.", "error");
   } finally {
@@ -452,7 +510,7 @@ async function handleProductAction(event) {
     if (action === "available") await firebase.updateProductStatus(id, "Disponível");
     if (action === "exhausted") await firebase.updateProductStatus(id, "Esgotado");
     if (action === "delete") {
-      const confirmed = window.confirm(`Excluir ${product.codigo} - ${product.nome}?`);
+      const confirmed = window.confirm(`Tem certeza que deseja excluir ${product.codigo} - ${product.nome}?`);
       if (!confirmed) return;
       await firebase.deleteProduct(id);
     }
@@ -467,6 +525,7 @@ async function handleProductAction(event) {
 function showLoggedIn() {
   loginView.hidden = true;
   adminApp.hidden = false;
+  loadStoreConfig();
   loadProducts();
 }
 
@@ -483,6 +542,13 @@ storeConfigForm.addEventListener("submit", handleSaveStoreConfig);
 clearFormButton.addEventListener("click", resetForm);
 productList.addEventListener("click", handleProductAction);
 logoutButton.addEventListener("click", () => firebase.logout());
+adminSearch?.addEventListener("input", renderProducts);
+adminStatusFilter?.addEventListener("change", renderProducts);
+refreshProductsButton?.addEventListener("click", loadProducts);
+["imagemPrincipal", "imagem2", "imagem3", "imagem4", "foto1", "foto2", "foto3", "foto4"].forEach((field) => {
+  productForm.elements[field]?.addEventListener("change", renderImagePreview);
+  productForm.elements[field]?.addEventListener("input", renderImagePreview);
+});
 
 if (isFirebaseReady()) {
   firebase.watchAuth((user) => {
@@ -494,3 +560,4 @@ if (isFirebaseReady()) {
 }
 
 loadStoreConfig();
+renderImagePreview();

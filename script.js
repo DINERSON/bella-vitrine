@@ -187,7 +187,7 @@ function getTheme(productOrCategory) {
 
 function matchesFilter(product, filter) {
   if (filter === "Todos") return true;
-  if (filter === "Mais Vendidos") return Boolean(product.destaque);
+  if (filter === "Mais Vendidos") return Boolean(product.maisVendido || product.destaque);
   if (filter === "Promoções") return Boolean(product.promocao);
   if (filter === "Oversized") {
     return product.categoria === "Oversized" || product.subcategoria === "Oversized" || /oversized/i.test(product.nome || "");
@@ -458,7 +458,7 @@ function renderCatalog() {
 }
 
 function renderFeaturedProducts() {
-  const products = visibleProducts.filter((product) => product.destaque).slice(0, 4);
+  const products = visibleProducts.filter((product) => product.maisVendido || product.destaque).slice(0, 4);
   featuredProducts.innerHTML = products.length
     ? products.map(renderProductCard).join("")
     : '<div class="empty-state">Os mais vendidos aparecem aqui quando houver produtos em destaque.</div>';

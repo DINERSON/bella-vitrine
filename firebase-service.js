@@ -113,6 +113,7 @@ function normalizeProduct(docSnapshot) {
     imagens: Array.isArray(data.imagens) ? data.imagens : [],
     status: data.status || "Disponível",
     destaque: Boolean(data.destaque),
+    maisVendido: Boolean(data.maisVendido || data.destaque),
     promocao: Boolean(data.promocao),
     descricao: data.descricao || "",
   };
@@ -206,13 +207,22 @@ async function saveProduct(product, imageFiles, existingId = null) {
     descricao: product.descricao,
     status: product.status,
     destaque: Boolean(product.destaque),
+    maisVendido: Boolean(product.maisVendido || product.destaque),
     promocao: Boolean(product.promocao),
     imagem: product.imagem || "",
     imagens: Array.isArray(product.imagens) ? product.imagens : [],
     updatedAt: firebaseModules.serverTimestamp(),
   };
 
-  const uploadedImages = await uploadProductImages(imageFiles);
+  let uploadedImages = [];
+  try {
+    uploadedImages = await uploadProductImages(imageFiles);
+  } catch (error) {
+    const hasUrlImages = Boolean(payload.imagem || payload.imagens.length);
+    if (!hasUrlImages) throw error;
+    console.warn("Upload de imagem falhou. Salvando produto com URLs informadas.", error);
+  }
+
   if (uploadedImages.length) {
     payload.imagem = uploadedImages[0];
     payload.imagens = [...uploadedImages, ...payload.imagens];
