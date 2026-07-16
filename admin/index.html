@@ -6,7 +6,7 @@
     <title>Admin | Vitrine Prime</title>
     <link rel="icon" type="image/png" href="../assets/brand/vitrine-prime-logo.png" />
     <link rel="stylesheet" href="../styles.css" />
-    <link rel="stylesheet" href="admin.css" />
+    <link rel="stylesheet" href="/admin/admin.css" />
   </head>
   <body class="admin-body">
     <main class="admin-shell">
@@ -65,8 +65,68 @@
         <section class="stats-grid" aria-label="Resumo dos produtos">
           <article><span id="stat-total">0</span><small>Total de produtos</small></article>
           <article><span id="stat-available">0</span><small>Disponíveis</small></article>
-          <article><span id="stat-sold">0</span><small>Vendidos</small></article>
+          <article><span id="stat-sold">0</span><small>Esgotados / Vendidos</small></article>
           <article><span id="stat-promo">0</span><small>Em promoção</small></article>
+        </section>
+
+        <section class="admin-shortcuts" aria-label="Acoes principais">
+          <a class="btn btn-primary" href="#product-form">Cadastrar produto</a>
+          <a class="btn btn-outline" href="#admin-product-list">Ver produtos</a>
+          <a class="btn btn-light" href="#store-config-form">Configuracoes da loja</a>
+        </section>
+
+        <section class="admin-card">
+          <div class="admin-section-title">
+            <div>
+              <p class="eyebrow">Loja</p>
+              <h2>Configuracoes da loja</h2>
+            </div>
+          </div>
+
+          <form class="store-config-form" id="store-config-form">
+            <label>
+              Nome da loja
+              <input name="storeName" placeholder="Vitrine Prime" />
+            </label>
+            <label>
+              Logo / URL da logo
+              <input name="logoImage" placeholder="assets/brand/vitrine-prime-logo.png" />
+            </label>
+            <label>
+              WhatsApp principal
+              <input name="whatsappNumber" placeholder="5569999999999" />
+            </label>
+            <label>
+              Instagram
+              <input name="instagramUser" placeholder="vitrineprime" />
+            </label>
+            <label>
+              Cidade
+              <input name="city" placeholder="Pimenta Bueno - RO" />
+            </label>
+            <label>
+              Texto de entrega
+              <input name="deliveryText" placeholder="Entrega em Pimenta Bueno e regiao" />
+            </label>
+            <label>
+              Formas de pagamento
+              <input name="paymentMethods" placeholder="Pix, dinheiro e cartao" />
+            </label>
+            <label>
+              Mensagem padrao do WhatsApp
+              <input name="whatsappDefaultMessage" placeholder="Ola, vim pelo catalogo da {storeName} e gostaria de atendimento." />
+            </label>
+            <label>
+              Texto principal do banner
+              <input name="heroTitle" placeholder="Vitrine Prime" />
+            </label>
+            <label>
+              Subtitulo do banner
+              <input name="heroSubtitle" placeholder="Moda masculina, feminina e verao em uma vitrine moderna." />
+            </label>
+            <button class="btn btn-primary full-field" type="submit" id="save-store-config">Salvar configuracoes</button>
+            <p class="form-message full-field" id="store-config-message" aria-live="polite"></p>
+          </form>
         </section>
 
         <section class="admin-card">
@@ -153,8 +213,20 @@
               </select>
             </label>
             <label>
-              Foto do produto
-              <input name="foto" type="file" accept="image/*" />
+              Foto principal (upload)
+              <input name="foto1" type="file" accept="image/*" />
+            </label>
+            <label>
+              Foto 2 (upload)
+              <input name="foto2" type="file" accept="image/*" />
+            </label>
+            <label>
+              Foto 3 (upload)
+              <input name="foto3" type="file" accept="image/*" />
+            </label>
+            <label>
+              Foto 4 (upload)
+              <input name="foto4" type="file" accept="image/*" />
             </label>
             <label>
               Imagem principal (URL)
@@ -177,7 +249,8 @@
               <textarea name="descricao" rows="4" placeholder="Descrição curta da peça."></textarea>
             </label>
             <div class="check-row">
-              <label><input name="destaque" type="checkbox" /> Mais Vendidos / Destaque</label>
+              <label><input name="destaque" type="checkbox" /> Produto em destaque</label>
+              <label><input name="maisVendido" type="checkbox" /> Mais vendidos</label>
               <label><input name="promocao" type="checkbox" /> Promoção</label>
             </div>
 
@@ -201,6 +274,6 @@
     <script src="../products.js"></script>
     <script src="../firebase-config.js"></script>
     <script src="../firebase-service.js"></script>
-    <script src="admin.js"></script>
+    <script src="/admin/admin.js"></script>
   </body>
 </html>

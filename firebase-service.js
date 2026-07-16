@@ -32,11 +32,13 @@ async function ensureFirebase() {
       collection: firestoreModule.collection,
       deleteDoc: firestoreModule.deleteDoc,
       doc: firestoreModule.doc,
+      getDoc: firestoreModule.getDoc,
       getDocs: firestoreModule.getDocs,
       getFirestore: firestoreModule.getFirestore,
       orderBy: firestoreModule.orderBy,
       query: firestoreModule.query,
       serverTimestamp: firestoreModule.serverTimestamp,
+      setDoc: firestoreModule.setDoc,
       updateDoc: firestoreModule.updateDoc,
       getDownloadURL: storageModule.getDownloadURL,
       getStorage: storageModule.getStorage,
@@ -57,6 +59,41 @@ function productsCollection() {
   return firebaseModules.collection(db, "products");
 }
 
+function normalizeKey(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+function stockKey(label) {
+  return normalizeKey(label) === "unico" ? "Unico" : label;
+}
+
+function storeConfigDoc() {
+  return firebaseModules.doc(db, "settings", "store");
+}
+
+function normalizeStoreConfig(data = {}) {
+  const instagramUser = String(data.instagramUser || "").replace(/^@/, "").trim();
+  const instagramUrl = data.instagramUrl || (instagramUser ? `https://www.instagram.com/${instagramUser}/` : "");
+
+  return {
+    storeName: data.storeName || "",
+    logoInitials: data.logoInitials || "",
+    logoImage: data.logoImage || "",
+    whatsappNumber: data.whatsappNumber || "",
+    instagramUser,
+    instagramUrl,
+    city: data.city || "",
+    deliveryText: data.deliveryText || "",
+    paymentMethods: data.paymentMethods || "",
+    whatsappDefaultMessage: data.whatsappDefaultMessage || "",
+    heroTitle: data.heroTitle || "",
+    heroSubtitle: data.heroSubtitle || "",
+  };
+}
+
 function normalizeProduct(docSnapshot) {
   const data = docSnapshot.data();
   return {
@@ -67,6 +104,7 @@ function normalizeProduct(docSnapshot) {
     categoria: data.categoria || "",
     subcategoria: data.subcategoria || "",
     tamanhos: data.tamanhos || data.sizesStock || "",
+    sizesStock: data.sizesStock || data.tamanhos || {},
     cor: data.cor || "",
     tecido: data.tecido || "",
     preco: data.preco || "",
@@ -89,8 +127,70 @@ async function fetchProducts() {
   return snapshot.docs.map(normalizeProduct);
 }
 
-async function saveProduct(product, imageFile, existingId = null) {
+function sizesStockFromProduct(product) {
+  const sizes = product.sizesStock || product.tamanhos || {};
+
+  if (Array.isArray(sizes)) {
+    return sizes.reduce((stock, size) => {
+      const label = String(size.label || size.tamanho || "").trim();
+      if (label) stock[stockKey(label)] = Math.max(0, Number(size.estoque) || 0);
+      return stock;
+    }, {});
+  }
+
+  if (sizes && typeof sizes === "object") {
+    return Object.entries(sizes).reduce((stock, [label, value]) => {
+      const key = String(label).trim();
+      if (key) stock[stockKey(key)] = Math.max(0, Number(value) || 0);
+      return stock;
+    }, {});
+  }
+
+  return {};
+}
+
+function normalizeImageFiles(imageFiles) {
+  if (!imageFiles) return [];
+  if (imageFiles instanceof File) return [imageFiles];
+  return Array.from(imageFiles).filter(Boolean);
+}
+
+async function uploadProductImages(imageFiles) {
+  const files = normalizeImageFiles(imageFiles);
+  const uploaded = [];
+
+  for (const imageFile of files) {
+    const safeName = imageFile.name.replace(/[^\w.-]+/g, "-").toLowerCase();
+    const imageRef = firebaseModules.ref(storage, `products/${Date.now()}-${safeName}`);
+    await firebaseModules.uploadBytes(imageRef, imageFile);
+    uploaded.push(await firebaseModules.getDownloadURL(imageRef));
+  }
+
+  return uploaded;
+}
+
+async function fetchStoreConfig() {
+  if (!configured) return null;
   await ensureFirebase();
+  const snapshot = await firebaseModules.getDoc(storeConfigDoc());
+  return snapshot.exists() ? normalizeStoreConfig(snapshot.data()) : null;
+}
+
+async function saveStoreConfig(storeConfig) {
+  await ensureFirebase();
+  await firebaseModules.setDoc(
+    storeConfigDoc(),
+    {
+      ...normalizeStoreConfig(storeConfig),
+      updatedAt: firebaseModules.serverTimestamp(),
+    },
+    { merge: true }
+  );
+}
+
+async function saveProduct(product, imageFiles, existingId = null) {
+  await ensureFirebase();
+  const sizesStock = sizesStockFromProduct(product);
 
   const payload = {
     codigo: product.codigo,
@@ -98,6 +198,7 @@ async function saveProduct(product, imageFile, existingId = null) {
     categoria: product.categoria,
     subcategoria: product.subcategoria || "",
     tamanhos: product.tamanhos,
+    sizesStock,
     cor: product.cor,
     tecido: product.tecido,
     preco: product.preco,
@@ -111,11 +212,10 @@ async function saveProduct(product, imageFile, existingId = null) {
     updatedAt: firebaseModules.serverTimestamp(),
   };
 
-  if (imageFile) {
-    const safeName = imageFile.name.replace(/[^\w.-]+/g, "-").toLowerCase();
-    const imageRef = firebaseModules.ref(storage, `products/${Date.now()}-${safeName}`);
-    await firebaseModules.uploadBytes(imageRef, imageFile);
-    payload.imagem = await firebaseModules.getDownloadURL(imageRef);
+  const uploadedImages = await uploadProductImages(imageFiles);
+  if (uploadedImages.length) {
+    payload.imagem = uploadedImages[0];
+    payload.imagens = [...uploadedImages, ...payload.imagens];
   }
 
   payload.imagens = [payload.imagem, ...payload.imagens].filter(Boolean).filter((image, index, list) => list.indexOf(image) === index);
@@ -173,6 +273,8 @@ async function logout() {
 window.PrimeFirebase = {
   isConfigured: () => configured,
   fetchProducts,
+  fetchStoreConfig,
+  saveStoreConfig,
   saveProduct,
   updateProductStatus,
   deleteProduct,

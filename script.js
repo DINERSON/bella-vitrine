@@ -1,5 +1,3 @@
-const WHATSAPP_NUMBER = STORE_CONFIG.whatsappNumber;
-
 const sectionLinks = {
   Início: "#inicio",
   "Mais Vendidos": "#novidades",
@@ -28,6 +26,7 @@ const productModalContent = document.querySelector("#product-modal-content");
 
 let activeFilter = "Todos";
 let visibleProducts = [...PRODUCTS];
+let menuReady = false;
 
 function setText(selector, text) {
   const element = document.querySelector(selector);
@@ -39,7 +38,7 @@ function replaceVars(template, values) {
 }
 
 function whatsappUrl(message) {
-  return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+  return `https://wa.me/${STORE_CONFIG.whatsappNumber}?text=${encodeURIComponent(message)}`;
 }
 
 function formatPrice(value) {
@@ -497,6 +496,31 @@ function renderAllProductSections() {
   renderPromoProducts();
 }
 
+function applyRemoteStoreConfig(remoteConfig) {
+  if (!remoteConfig) return;
+
+  const nextStoreConfig = {
+    storeName: remoteConfig.storeName,
+    logoInitials: remoteConfig.logoInitials,
+    logoImage: remoteConfig.logoImage,
+    whatsappNumber: remoteConfig.whatsappNumber,
+    instagramUser: remoteConfig.instagramUser,
+    instagramUrl: remoteConfig.instagramUrl,
+    city: remoteConfig.city,
+    deliveryText: remoteConfig.deliveryText,
+    paymentMethods: remoteConfig.paymentMethods,
+    whatsappDefaultMessage: remoteConfig.whatsappDefaultMessage,
+  };
+
+  Object.entries(nextStoreConfig).forEach(([key, value]) => {
+    if (value) STORE_CONFIG[key] = value;
+  });
+
+  if (remoteConfig.heroTitle) SITE_CONTENT.hero.title = remoteConfig.heroTitle;
+  if (remoteConfig.heroSubtitle) SITE_CONTENT.hero.subtitle = remoteConfig.heroSubtitle;
+  SITE_CONTENT.footer.text = `${STORE_CONFIG.storeName}: moda masculina, feminina e verao com compra rapida pelo WhatsApp.`;
+}
+
 function applyStoreConfig() {
   const generalMessage = replaceVars(STORE_CONFIG.whatsappDefaultMessage, {
     storeName: STORE_CONFIG.storeName,
@@ -568,6 +592,9 @@ function applyStoreConfig() {
 }
 
 function setupMenu() {
+  if (menuReady) return;
+  menuReady = true;
+
   const openMenu = () => {
     menuToggle.setAttribute("aria-expanded", "true");
     menuToggle.setAttribute("aria-label", "Fechar menu");
@@ -594,17 +621,22 @@ function setupMenu() {
     menuBackdrop.addEventListener("click", closeMenu);
   }
 
-  navLinks.querySelector("[data-menu-close]")?.addEventListener("click", closeMenu);
-
-  navLinks.querySelectorAll("a").forEach((link) => {
-    link.addEventListener("click", (event) => {
-      const filter = link.dataset.menuFilter;
-      if (filter) {
-        event.preventDefault();
-        setActiveFilter(filter);
-      }
+  navLinks.addEventListener("click", (event) => {
+    const closeButton = event.target.closest("[data-menu-close]");
+    if (closeButton) {
       closeMenu();
-    });
+      return;
+    }
+
+    const link = event.target.closest("a");
+    if (!link) return;
+
+    const filter = link.dataset.menuFilter;
+    if (filter) {
+      event.preventDefault();
+      setActiveFilter(filter);
+    }
+    closeMenu();
   });
 
   document.addEventListener("keydown", (event) => {
@@ -738,7 +770,7 @@ function setupProductInteractions() {
   });
 }
 
-async function loadFirebaseProducts() {
+async function loadFirebaseData() {
   const firebase = window.PrimeFirebase;
 
   if (!firebase || !firebase.isConfigured()) {
@@ -747,6 +779,13 @@ async function loadFirebaseProducts() {
   }
 
   try {
+    const remoteStoreConfig = await firebase.fetchStoreConfig();
+    if (remoteStoreConfig) {
+      applyRemoteStoreConfig(remoteStoreConfig);
+      renderMenu();
+      applyStoreConfig();
+    }
+
     const remoteProducts = await firebase.fetchProducts();
     if (remoteProducts.length) {
       visibleProducts = remoteProducts;
@@ -768,4 +807,4 @@ setupProductInteractions();
 renderCategories();
 renderAllProductSections();
 renderLooks();
-loadFirebaseProducts();
+loadFirebaseData();

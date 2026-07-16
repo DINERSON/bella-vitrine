@@ -11,6 +11,9 @@ const formMessage = document.querySelector("#form-message");
 const clearFormButton = document.querySelector("#clear-form");
 const productList = document.querySelector("#admin-product-list");
 const categorySelect = document.querySelector("#category-select");
+const storeConfigForm = document.querySelector("#store-config-form");
+const storeConfigMessage = document.querySelector("#store-config-message");
+const saveStoreConfigButton = document.querySelector("#save-store-config");
 
 let products = [];
 
@@ -22,6 +25,17 @@ const STOCK_FIELDS = [
   { label: "XG", field: "stock_XG" },
   { label: "Único", field: "stock_Unico" },
 ];
+
+function normalizeKey(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+function stockKey(label) {
+  return normalizeKey(label) === "unico" ? "Unico" : label;
+}
 
 function isFirebaseReady() {
   return Boolean(firebase && firebase.isConfigured());
@@ -77,6 +91,50 @@ function normalizeSizes(product) {
     .map((label) => ({ label, estoque: 1 }));
 }
 
+function defaultStoreConfig() {
+  return {
+    storeName: STORE_CONFIG.storeName || "Vitrine Prime",
+    logoImage: STORE_CONFIG.logoImage || "assets/brand/vitrine-prime-logo.png",
+    whatsappNumber: STORE_CONFIG.whatsappNumber || "",
+    instagramUser: STORE_CONFIG.instagramUser || "",
+    city: STORE_CONFIG.city || "",
+    deliveryText: STORE_CONFIG.deliveryText || "",
+    paymentMethods: STORE_CONFIG.paymentMethods || "",
+    whatsappDefaultMessage: STORE_CONFIG.whatsappDefaultMessage || "",
+    heroTitle: SITE_CONTENT.hero.title || STORE_CONFIG.storeName || "",
+    heroSubtitle: SITE_CONTENT.hero.subtitle || "",
+  };
+}
+
+function fillStoreConfigForm(config = {}) {
+  const merged = { ...defaultStoreConfig(), ...config };
+  Object.entries(merged).forEach(([field, value]) => {
+    if (storeConfigForm.elements[field]) {
+      storeConfigForm.elements[field].value = value || "";
+    }
+  });
+}
+
+function storeConfigFromForm() {
+  const data = new FormData(storeConfigForm);
+  const instagramUser = String(data.get("instagramUser") || "").replace(/^@/, "").trim();
+
+  return {
+    storeName: String(data.get("storeName") || "").trim(),
+    logoInitials: "VP",
+    logoImage: String(data.get("logoImage") || "").trim(),
+    whatsappNumber: String(data.get("whatsappNumber") || "").replace(/\D/g, ""),
+    instagramUser,
+    instagramUrl: instagramUser ? `https://www.instagram.com/${instagramUser}/` : "",
+    city: String(data.get("city") || "").trim(),
+    deliveryText: String(data.get("deliveryText") || "").trim(),
+    paymentMethods: String(data.get("paymentMethods") || "").trim(),
+    whatsappDefaultMessage: String(data.get("whatsappDefaultMessage") || "").trim(),
+    heroTitle: String(data.get("heroTitle") || "").trim(),
+    heroSubtitle: String(data.get("heroSubtitle") || "").trim(),
+  };
+}
+
 function isUnavailable(product) {
   const status = String(product.status || "").toLowerCase();
   const sizes = normalizeSizes(product);
@@ -94,6 +152,14 @@ function sizesFromForm(data) {
   }).filter(Boolean);
 }
 
+function sizesStockFromSizes(sizes) {
+  return sizes.reduce((stock, size) => {
+    const key = stockKey(size.label);
+    stock[key] = size.estoque;
+    return stock;
+  }, {});
+}
+
 function clearStockFields() {
   STOCK_FIELDS.forEach(({ field }) => {
     productForm.elements[field].value = "";
@@ -103,7 +169,7 @@ function clearStockFields() {
 function fillStockFields(product) {
   clearStockFields();
   normalizeSizes(product).forEach((size) => {
-    const field = STOCK_FIELDS.find((item) => item.label.toLowerCase() === size.label.toLowerCase())?.field;
+    const field = STOCK_FIELDS.find((item) => normalizeKey(item.label) === normalizeKey(size.label))?.field;
     if (field && productForm.elements[field]) {
       productForm.elements[field].value = size.estoque;
     }
@@ -136,6 +202,12 @@ function imagesFromForm(data) {
     .filter((image, index, list) => list.indexOf(image) === index);
 }
 
+function imageFilesFromForm() {
+  return ["foto1", "foto2", "foto3", "foto4"]
+    .map((field) => productForm.elements[field]?.files?.[0])
+    .filter(Boolean);
+}
+
 function clearImageFields() {
   ["imagemPrincipal", "imagem2", "imagem3", "imagem4"].forEach((field) => {
     productForm.elements[field].value = "";
@@ -161,20 +233,23 @@ function fillCategoryOptions() {
 function productFromForm() {
   const data = new FormData(productForm);
   const imagens = imagesFromForm(data);
+  const tamanhos = sizesFromForm(data);
   return {
     firestoreId: data.get("firestoreId"),
     codigo: data.get("codigo").trim(),
     nome: data.get("nome").trim(),
     categoria: data.get("categoria"),
     subcategoria: data.get("subcategoria").trim(),
-    tamanhos: sizesFromForm(data),
+    tamanhos,
+    sizesStock: sizesStockFromSizes(tamanhos),
     cor: data.get("cor").trim(),
     tecido: data.get("tecido").trim(),
     preco: data.get("preco").trim(),
     precoAntigo: data.get("precoAntigo").trim(),
     descricao: data.get("descricao").trim(),
     status: data.get("status"),
-    destaque: data.get("destaque") === "on",
+    destaque: data.get("destaque") === "on" || data.get("maisVendido") === "on",
+    maisVendido: data.get("maisVendido") === "on",
     promocao: data.get("promocao") === "on",
     imagem: imagens[0] || data.get("imagem"),
     imagens,
@@ -187,6 +262,9 @@ function resetForm() {
   clearImageFields();
   productForm.elements.firestoreId.value = "";
   productForm.elements.imagem.value = "";
+  ["foto1", "foto2", "foto3", "foto4"].forEach((field) => {
+    if (productForm.elements[field]) productForm.elements[field].value = "";
+  });
   formTitle.textContent = "Cadastrar produto";
   setMessage(formMessage, "");
 }
@@ -207,6 +285,7 @@ function fillForm(product) {
   productForm.elements.descricao.value = product.descricao || "";
   productForm.elements.status.value = product.status || "Disponível";
   productForm.elements.destaque.checked = Boolean(product.destaque);
+  productForm.elements.maisVendido.checked = Boolean(product.maisVendido || product.destaque);
   productForm.elements.promocao.checked = Boolean(product.promocao);
   formTitle.textContent = `Editar ${product.codigo}`;
   productForm.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -278,6 +357,19 @@ async function loadProducts() {
   }
 }
 
+async function loadStoreConfig() {
+  fillStoreConfigForm();
+
+  if (!isFirebaseReady()) return;
+
+  try {
+    const config = await firebase.fetchStoreConfig();
+    if (config) fillStoreConfigForm(config);
+  } catch (error) {
+    setMessage(storeConfigMessage, "Nao foi possivel carregar as configuracoes agora.", "error");
+  }
+}
+
 async function handleLogin(event) {
   event.preventDefault();
   if (!isFirebaseReady()) {
@@ -299,14 +391,14 @@ async function handleLogin(event) {
 async function handleSaveProduct(event) {
   event.preventDefault();
   const product = productFromForm();
-  const imageFile = productForm.elements.foto.files[0] || null;
+  const imageFiles = imageFilesFromForm();
   const existingId = product.firestoreId || null;
 
   setMessage(formMessage, "Salvando produto...");
   productForm.querySelector("#save-product").disabled = true;
 
   try {
-    await firebase.saveProduct(product, imageFile, existingId);
+    await firebase.saveProduct(product, imageFiles, existingId);
     setMessage(formMessage, "Produto salvo com sucesso.", "success");
     resetForm();
     await loadProducts();
@@ -314,6 +406,27 @@ async function handleSaveProduct(event) {
     setMessage(formMessage, "Não foi possível salvar. Confira sua internet e tente novamente.", "error");
   } finally {
     productForm.querySelector("#save-product").disabled = false;
+  }
+}
+
+async function handleSaveStoreConfig(event) {
+  event.preventDefault();
+
+  if (!isFirebaseReady()) {
+    setMessage(storeConfigMessage, "Configure o Firebase antes de salvar as configuracoes.", "error");
+    return;
+  }
+
+  setMessage(storeConfigMessage, "Salvando configuracoes...");
+  saveStoreConfigButton.disabled = true;
+
+  try {
+    await firebase.saveStoreConfig(storeConfigFromForm());
+    setMessage(storeConfigMessage, "Configuracoes salvas. A vitrine publica sera atualizada automaticamente.", "success");
+  } catch (error) {
+    setMessage(storeConfigMessage, "Nao foi possivel salvar as configuracoes. Tente novamente.", "error");
+  } finally {
+    saveStoreConfigButton.disabled = false;
   }
 }
 
@@ -366,6 +479,7 @@ fillCategoryOptions();
 configWarning.hidden = isFirebaseReady();
 loginForm.addEventListener("submit", handleLogin);
 productForm.addEventListener("submit", handleSaveProduct);
+storeConfigForm.addEventListener("submit", handleSaveStoreConfig);
 clearFormButton.addEventListener("click", resetForm);
 productList.addEventListener("click", handleProductAction);
 logoutButton.addEventListener("click", () => firebase.logout());
@@ -378,3 +492,5 @@ if (isFirebaseReady()) {
 } else {
   showLoggedOut();
 }
+
+loadStoreConfig();

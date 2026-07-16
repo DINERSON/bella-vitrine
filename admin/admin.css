@@ -52,13 +52,15 @@
 }
 
 .admin-form,
-.product-form {
+.product-form,
+.store-config-form {
   display: grid;
   gap: 14px;
 }
 
 .admin-form label,
-.product-form label {
+.product-form label,
+.store-config-form label {
   display: grid;
   gap: 7px;
   color: #fff;
@@ -66,6 +68,7 @@
 }
 
 .admin-form input,
+.store-config-form input,
 .product-form input,
 .product-form select,
 .product-form textarea {
@@ -84,6 +87,7 @@
 }
 
 .admin-form input:focus,
+.store-config-form input:focus,
 .product-form input:focus,
 .product-form select:focus,
 .product-form textarea:focus {
@@ -158,6 +162,18 @@
   font-weight: 800;
 }
 
+.admin-shortcuts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.admin-shortcuts .btn {
+  justify-content: center;
+  min-height: 52px;
+  text-align: center;
+}
+
 .admin-card {
   padding: 22px;
 }
@@ -174,7 +190,8 @@
   font-size: clamp(1.6rem, 3vw, 2.4rem);
 }
 
-.product-form {
+.product-form,
+.store-config-form {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
@@ -346,7 +363,9 @@
   }
 
   .stats-grid,
-  .product-form {
+  .product-form,
+  .store-config-form,
+  .admin-shortcuts {
     grid-template-columns: 1fr;
   }
 

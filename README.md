@@ -1,26 +1,25 @@
 # Vitrine Prime
 
-Site catálogo de moda masculina com venda pelo WhatsApp e painel administrativo em `/admin`.
+Site catalogo da Vitrine Prime com venda pelo WhatsApp e painel administrativo em `/admin`.
 
-## Estrutura
+## O que existe no projeto
 
-- `index.html`: vitrine pública.
-- `styles.css`: visual da vitrine.
-- `script.js`: renderização da vitrine, filtros, produtos e WhatsApp.
-- `products.js`: configurações da loja e produtos de exemplo/fallback.
-- `firebase-config.js`: credenciais do Firebase Web App.
-- `firebase-service.js`: integração com Auth, Firestore e Storage.
-- `admin/`: painel privado para cadastrar, editar, vender/disponibilizar e excluir produtos.
-- `fotos/`: imagens locais usadas como fallback.
-- `firestore.rules`: regras sugeridas para o Firestore.
-- `storage.rules`: regras sugeridas para o Firebase Storage.
+- `/`: vitrine publica para clientes.
+- `/admin`: painel privado para a dona da loja cadastrar produtos pelo celular.
+- `products.js`: produtos e configuracoes locais de fallback.
+- `firebase-config.js`: local onde entram as credenciais do Firebase.
+- `firebase-service.js`: integracao com Firebase Auth, Firestore e Storage.
+- `admin/index.html`, `admin/admin.css`, `admin/admin.js`: painel administrativo.
+- `firestore.rules` e `storage.rules`: regras recomendadas de seguranca.
 
-## Como configurar o Firebase
+Nao existe carrinho, pagamento online, login para cliente nem backend proprio.
+
+## Como configurar Firebase
 
 1. Acesse o Firebase Console e crie um projeto.
-2. Dentro do projeto, crie um app Web.
-3. Copie o objeto de configuração do Firebase.
-4. Cole os dados em `firebase-config.js`, mantendo este formato:
+2. Em Project settings, crie um app Web.
+3. Copie o objeto `firebaseConfig`.
+4. Cole os dados em `firebase-config.js`:
 
 ```js
 window.FIREBASE_CONFIG = {
@@ -33,49 +32,160 @@ window.FIREBASE_CONFIG = {
 };
 ```
 
-5. Em Authentication, habilite o provedor "E-mail/senha".
-6. Em Authentication > Users, crie o usuário admin com e-mail e senha.
+5. Em Authentication, habilite o provedor `Email/password`.
+6. Em Authentication > Users, crie o usuario admin com e-mail e senha.
 7. Crie o Firestore Database.
-8. Publique as regras de `firestore.rules`.
+8. Publique o conteudo de `firestore.rules`.
 9. Ative o Firebase Storage.
-10. Publique as regras de `storage.rules`.
+10. Publique o conteudo de `storage.rules`.
 
-## Segurança
+## Regras de seguranca
 
-- A vitrine pública pode ler produtos.
-- Apenas usuário logado no Firebase Auth pode cadastrar, editar ou excluir produtos.
-- As fotos ficam no Firebase Storage em `products/`.
+Firestore:
 
-## Como usar o painel pelo celular
+- leitura publica para `products` e `settings`;
+- escrita apenas para usuario autenticado.
 
-1. Abra `https://SEU-SITE.netlify.app/admin`.
-2. Entre com o e-mail e senha criados no Firebase Auth.
-3. Toque em "Cadastrar produto".
-4. Preencha código, nome, categoria, preço, status e demais campos.
-5. Selecione uma foto da galeria do celular.
-6. Salve o produto.
-7. O produto aparecerá automaticamente na vitrine pública.
+Storage:
+
+- leitura publica das imagens em `products/`;
+- upload/escrita apenas para usuario autenticado.
+
+## Como acessar o admin
+
+Depois de publicar o site:
+
+```text
+https://SEU-SITE.netlify.app/admin
+```
+
+Entre com o e-mail e senha criados no Firebase Auth.
+
+## O que da para editar no admin
+
+Em `Configuracoes da loja`:
+
+- nome da loja;
+- URL da logo;
+- WhatsApp principal;
+- Instagram;
+- cidade;
+- texto de entrega;
+- formas de pagamento;
+- mensagem padrao do WhatsApp;
+- titulo principal do banner;
+- subtitulo do banner.
+
+Esses dados ficam no Firestore em:
+
+```text
+settings/store
+```
+
+A vitrine publica le esse documento automaticamente. Se o Firebase falhar, o site usa o fallback do `products.js`.
+
+## Como cadastrar produto
+
+No painel `/admin`, toque em `Cadastrar produto` e preencha:
+
+- codigo;
+- nome;
+- categoria;
+- subcategoria;
+- descricao;
+- cor;
+- tecido;
+- preco atual;
+- preco antigo;
+- promocao;
+- status;
+- destaque;
+- mais vendidos;
+- estoque por tamanho;
+- fotos.
+
+O estoque por tamanho e salvo como `sizesStock`, por exemplo:
+
+```js
+sizesStock: {
+  P: 2,
+  M: 0,
+  G: 4,
+  GG: 0,
+  XG: 1,
+  Unico: 0,
+}
+```
+
+Se todos os tamanhos estiverem com estoque `0`, o produto aparece como esgotado na vitrine.
+
+## Como cadastrar fotos
+
+Existem duas formas:
+
+1. Upload pelo celular:
+   selecione Foto principal, Foto 2, Foto 3 e Foto 4. As imagens vao para o Firebase Storage.
+
+2. URL manual:
+   cole URLs nos campos `Imagem principal`, `Foto 2`, `Foto 3` e `Foto 4`.
+
+Se o Storage ainda nao estiver configurado, use os campos de URL.
+
+## WhatsApp
+
+O numero do WhatsApp vem das configuracoes da loja salvas no admin.
+
+Mensagem geral:
+
+```text
+Ola, vim pelo catalogo da Vitrine Prime e gostaria de atendimento.
+```
+
+Mensagem de produto:
+
+```text
+Ola, tenho interesse no produto [CODIGO] - [NOME]. Esta disponivel?
+```
+
+Mensagem com tamanho:
+
+```text
+Ola, tenho interesse no produto [CODIGO] - [NOME], tamanho [TAMANHO]. Esta disponivel?
+```
 
 ## Como publicar no Netlify
 
-Opção manual:
+Publicacao manual:
 
-1. Acesse Netlify.
-2. Clique em "Add new site" > "Deploy manually".
-3. Arraste a pasta inteira do projeto.
-4. Depois de publicar, abra "Site configuration" > "Change site name".
-5. Escolha um nome como `vitrine-prime` ou mantenha `prime-vitrine`.
-6. O link ficará parecido com `https://prime-vitrine.netlify.app`.
+1. Acesse o Netlify.
+2. Clique em `Add new site`.
+3. Clique em `Deploy manually`.
+4. Arraste a pasta inteira do projeto.
+5. Depois do deploy, va em `Site configuration`.
+6. Clique em `Change site name`.
+7. Escolha um nome como `vitrine-prime`.
 
-Opção pelo GitHub:
+O link ficara parecido com:
 
-1. Envie este projeto para o repositório GitHub.
-2. No Netlify, clique em "Add new site" > "Import an existing project".
-3. Selecione o repositório.
-4. Build command: deixe vazio.
-5. Publish directory: deixe como raiz do projeto.
-6. Clique em deploy.
+```text
+https://vitrine-prime.netlify.app
+```
+
+Publicacao pelo GitHub:
+
+1. Envie este projeto para o GitHub.
+2. No Netlify, clique em `Add new site`.
+3. Clique em `Import an existing project`.
+4. Selecione o repositorio.
+5. Build command: deixe vazio.
+6. Publish directory: use a raiz do projeto.
+7. Publique.
 
 ## Fallback
 
-Se o Firebase ainda não estiver configurado, a vitrine não quebra. Ela mostra os produtos de exemplo do `products.js` e uma mensagem amigável no catálogo.
+Se o Firebase ainda nao estiver configurado, a vitrine nao quebra:
+
+- usa produtos de exemplo do `products.js`;
+- usa configuracoes locais do `products.js`;
+- mostra aviso discreto no catalogo/console;
+- o admin mostra mensagem pedindo configuracao do Firebase.
