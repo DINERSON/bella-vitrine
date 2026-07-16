@@ -4,8 +4,9 @@
 // texto de entrega, formas de pagamento e mensagens do WhatsApp.
 // ============================================================
 const STORE_CONFIG = {
-  storeName: "Prime Vitrine",
-  logoInitials: "PV",
+  storeName: "Vitrine Prime",
+  logoInitials: "VP",
+  logoImage: "assets/brand/vitrine-prime-logo.png",
   whatsappNumber: "5569999999999",
   instagramUser: "primevitrine",
   instagramUrl: "https://www.instagram.com/primevitrine/",
@@ -18,7 +19,7 @@ const STORE_CONFIG = {
 
 const SITE_CONTENT = {
   metaDescription:
-    "Prime Vitrine é uma loja catálogo de moda masculina, feminina e verão, com venda direta pelo WhatsApp.",
+    "Vitrine Prime é uma loja catálogo de moda masculina, feminina e verão, com venda direta pelo WhatsApp.",
   nav: [
     "Início",
     "Mais Vendidos",
@@ -41,11 +42,11 @@ const SITE_CONTENT = {
   },
   hero: {
     eyebrow: "VITRINE ONLINE",
-    title: "Prime Vitrine",
+    title: "Vitrine Prime",
     subtitle:
       "Moda masculina, feminina e verão em uma vitrine simples, moderna e direta pelo WhatsApp.",
     image: "fotos/banner-prime-vitrine.jpg",
-    imageAlt: "Prime Vitrine moda online",
+    imageAlt: "Vitrine Prime moda online",
   },
   sections: {
     categoriesEyebrow: "Escolha por identidade",
@@ -72,7 +73,7 @@ const SITE_CONTENT = {
     contactCardTitle: "Informações da loja",
   },
   footer: {
-    text: "Prime Vitrine: moda masculina, feminina e verão com compra rápida pelo WhatsApp.",
+    text: "Vitrine Prime: moda masculina, feminina e verão com compra rápida pelo WhatsApp.",
     rights: "Todos os direitos reservados.",
   },
   lookMessage: "Olá, gostei do {look}. Pode me mandar mais informações?",

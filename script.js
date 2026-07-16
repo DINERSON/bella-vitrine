@@ -271,7 +271,13 @@ function applyStoreConfig() {
     element.textContent = STORE_CONFIG.storeName;
   });
   document.querySelectorAll(".brand-mark").forEach((element) => {
-    element.textContent = STORE_CONFIG.logoInitials || "PV";
+    if (!element.querySelector("img")) {
+      element.textContent = STORE_CONFIG.logoInitials || "VP";
+    }
+  });
+  document.querySelectorAll("[data-brand-logo]").forEach((image) => {
+    image.src = STORE_CONFIG.logoImage || "assets/brand/vitrine-prime-logo.png";
+    image.alt = `Logo ${STORE_CONFIG.storeName}`;
   });
   document.querySelectorAll("[data-whatsapp-general]").forEach((link) => {
     link.href = whatsappUrl(generalMessage);
