@@ -72,6 +72,7 @@ function normalizeProduct(docSnapshot) {
     preco: data.preco || "",
     precoAntigo: data.precoAntigo || "",
     imagem: data.imagem || "",
+    imagens: Array.isArray(data.imagens) ? data.imagens : [],
     status: data.status || "Disponível",
     destaque: Boolean(data.destaque),
     promocao: Boolean(data.promocao),
@@ -106,6 +107,7 @@ async function saveProduct(product, imageFile, existingId = null) {
     destaque: Boolean(product.destaque),
     promocao: Boolean(product.promocao),
     imagem: product.imagem || "",
+    imagens: Array.isArray(product.imagens) ? product.imagens : [],
     updatedAt: firebaseModules.serverTimestamp(),
   };
 
@@ -115,6 +117,8 @@ async function saveProduct(product, imageFile, existingId = null) {
     await firebaseModules.uploadBytes(imageRef, imageFile);
     payload.imagem = await firebaseModules.getDownloadURL(imageRef);
   }
+
+  payload.imagens = [payload.imagem, ...payload.imagens].filter(Boolean).filter((image, index, list) => list.indexOf(image) === index);
 
   if (existingId) {
     await firebaseModules.updateDoc(firebaseModules.doc(db, "products", existingId), payload);

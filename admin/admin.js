@@ -116,6 +116,41 @@ function sizesSummary(product) {
   return sizes.map((size) => `${size.label}: ${size.estoque}`).join(" · ");
 }
 
+function normalizeImages(product) {
+  const images = Array.isArray(product?.imagens) ? product.imagens : [];
+  return [product?.imagem, ...images]
+    .map((image) => String(image || "").trim())
+    .filter(Boolean)
+    .filter((image, index, list) => list.indexOf(image) === index);
+}
+
+function imagesFromForm(data) {
+  return [
+    data.get("imagemPrincipal"),
+    data.get("imagem2"),
+    data.get("imagem3"),
+    data.get("imagem4"),
+  ]
+    .map((image) => String(image || "").trim())
+    .filter(Boolean)
+    .filter((image, index, list) => list.indexOf(image) === index);
+}
+
+function clearImageFields() {
+  ["imagemPrincipal", "imagem2", "imagem3", "imagem4"].forEach((field) => {
+    productForm.elements[field].value = "";
+  });
+}
+
+function fillImageFields(product) {
+  clearImageFields();
+  const images = normalizeImages(product);
+  productForm.elements.imagemPrincipal.value = images[0] || "";
+  productForm.elements.imagem2.value = images[1] || "";
+  productForm.elements.imagem3.value = images[2] || "";
+  productForm.elements.imagem4.value = images[3] || "";
+}
+
 function fillCategoryOptions() {
   const productCategories = CATEGORIES.filter((category) => category !== "Mais Vendidos");
   categorySelect.innerHTML = productCategories
@@ -125,6 +160,7 @@ function fillCategoryOptions() {
 
 function productFromForm() {
   const data = new FormData(productForm);
+  const imagens = imagesFromForm(data);
   return {
     firestoreId: data.get("firestoreId"),
     codigo: data.get("codigo").trim(),
@@ -140,13 +176,15 @@ function productFromForm() {
     status: data.get("status"),
     destaque: data.get("destaque") === "on",
     promocao: data.get("promocao") === "on",
-    imagem: data.get("imagem"),
+    imagem: imagens[0] || data.get("imagem"),
+    imagens,
   };
 }
 
 function resetForm() {
   productForm.reset();
   clearStockFields();
+  clearImageFields();
   productForm.elements.firestoreId.value = "";
   productForm.elements.imagem.value = "";
   formTitle.textContent = "Cadastrar produto";
@@ -156,6 +194,7 @@ function resetForm() {
 function fillForm(product) {
   productForm.elements.firestoreId.value = product.firestoreId || product.id;
   productForm.elements.imagem.value = product.imagem || "";
+  fillImageFields(product);
   productForm.elements.codigo.value = product.codigo || "";
   productForm.elements.nome.value = product.nome || "";
   productForm.elements.categoria.value = product.categoria || "";
@@ -182,13 +221,15 @@ function renderStats() {
 
 function productCard(product) {
   const id = product.firestoreId || product.id;
-  const image = product.imagem
-    ? `<img src="${escapeHtml(product.imagem)}" alt="${escapeHtml(product.nome)}" onerror="this.closest('.admin-product-image').classList.add('missing'); this.remove();">`
+  const images = normalizeImages(product);
+  const imageSrc = images[0] || "";
+  const image = imageSrc
+    ? `<img src="${escapeHtml(imageSrc)}" alt="${escapeHtml(product.nome)}" onerror="this.closest('.admin-product-image').classList.add('missing'); this.remove();">`
     : "";
 
   return `
     <article class="admin-product" data-id="${escapeHtml(id)}">
-      <div class="admin-product-image ${product.imagem ? "" : "missing"}">
+      <div class="admin-product-image ${imageSrc ? "" : "missing"}">
         ${image}
         <span>Foto em breve</span>
       </div>
@@ -198,6 +239,7 @@ function productCard(product) {
         <p>${formatPrice(product.preco)} ${product.promocao && product.precoAntigo ? `<del>${formatPrice(product.precoAntigo)}</del>` : ""}</p>
         <small>Status: ${escapeHtml(isUnavailable(product) ? "Esgotado" : product.status)}${product.destaque ? " · Mais Vendidos" : ""}${product.promocao ? " · Promoção" : ""}</small>
         <small>Estoque: ${escapeHtml(sizesSummary(product))}</small>
+        <small>Fotos: ${images.length}</small>
       </div>
       <div class="admin-product-actions">
         <button class="btn btn-outline" type="button" data-action="edit">Editar</button>

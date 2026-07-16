@@ -23,6 +23,8 @@ const lookGrid = document.querySelector("#look-grid");
 const menuToggle = document.querySelector(".menu-toggle");
 const navLinks = document.querySelector("#main-menu");
 const menuBackdrop = document.querySelector(".menu-backdrop");
+const productModal = document.querySelector("#product-modal");
+const productModalContent = document.querySelector("#product-modal-content");
 
 let activeFilter = "Todos";
 let visibleProducts = [...PRODUCTS];
@@ -118,6 +120,18 @@ function findProductByCardId(id) {
   return visibleProducts.find((product) => productCardId(product) === id);
 }
 
+function productImages(product) {
+  const images = Array.isArray(product?.imagens) ? product.imagens : [];
+  return [product?.imagem, ...images]
+    .map((image) => String(image || "").trim())
+    .filter(Boolean)
+    .filter((image, index, list) => list.indexOf(image) === index);
+}
+
+function primaryProductImage(product) {
+  return productImages(product)[0] || "";
+}
+
 function sizeSummary(product) {
   const sizes = normalizeSizes(product);
   if (!sizes.length) return "";
@@ -201,6 +215,121 @@ function imageMarkup(src, alt) {
   `;
 }
 
+function modalImageMarkup(src, alt, sold) {
+  const safeSrc = escapeHtml(src);
+  const safeAlt = escapeHtml(alt);
+  const hasImage = Boolean(src && String(src).trim());
+  const image = hasImage
+    ? `<img id="product-modal-main-image" src="${safeSrc}" alt="${safeAlt}" onerror="this.closest('.product-modal-photo').classList.add('photo-missing'); this.remove();">`
+    : "";
+
+  return `
+    <div class="product-modal-photo ${hasImage ? "" : "photo-missing"} ${sold ? "is-sold-out" : ""}">
+      ${image}
+      <div class="photo-placeholder">
+        <span>Foto em breve</span>
+      </div>
+    </div>
+  `;
+}
+
+function renderProductThumbnails(product) {
+  const images = productImages(product);
+  if (images.length <= 1) return "";
+
+  return `
+    <div class="product-modal-thumbs" aria-label="Fotos do produto">
+      ${images
+        .map(
+          (image, index) => `
+            <button class="product-thumb ${index === 0 ? "active" : ""}" type="button" data-image="${escapeHtml(image)}" aria-label="Ver foto ${index + 1}">
+              <img src="${escapeHtml(image)}" alt="" onerror="this.closest('.product-thumb').classList.add('photo-missing'); this.remove();">
+              <span>Foto ${index + 1}</span>
+            </button>
+          `
+        )
+        .join("")}
+    </div>
+  `;
+}
+
+function detailRow(label, value) {
+  if (!value) return "";
+  return `
+    <div>
+      <dt>${escapeHtml(label)}</dt>
+      <dd>${escapeHtml(value)}</dd>
+    </div>
+  `;
+}
+
+function renderProductModal(product) {
+  const sold = isSold(product);
+  const theme = getTheme(product);
+  const images = productImages(product);
+  const mainImage = images[0] || "";
+  const statusLabel = productStatusLabel(product);
+  const hasSizes = normalizeSizes(product).length > 0;
+  const price = product.promocao
+    ? `<div class="modal-price"><span class="old-price">${formatPrice(product.precoAntigo)}</span><strong>${formatPrice(product.preco)}</strong></div>`
+    : `<div class="modal-price"><strong>${formatPrice(product.preco)}</strong></div>`;
+  const action = sold
+    ? `<button class="btn btn-disabled modal-buy" type="button" disabled>Indisponível</button>`
+    : hasSizes
+      ? `<button class="btn btn-whatsapp modal-buy product-modal-buy" type="button">Comprar pelo WhatsApp</button>`
+      : `<a class="btn btn-whatsapp modal-buy" href="${whatsappUrl(productMessage(product))}" target="_blank" rel="noopener">Comprar pelo WhatsApp</a>`;
+
+  return `
+    <div class="product-modal-grid theme-${theme} ${sold ? "is-sold-out" : ""}" data-product-id="${escapeHtml(productCardId(product))}">
+      <div class="product-modal-gallery">
+        ${modalImageMarkup(mainImage, product.nome, sold)}
+        ${renderProductThumbnails(product)}
+      </div>
+      <div class="product-modal-details">
+        <div class="product-modal-badges">
+          ${product.promocao ? '<span class="badge-inline badge-promo-inline">Promoção</span>' : ""}
+          <span class="badge-inline ${sold ? "badge-sold-inline" : "badge-available-inline"}">${escapeHtml(statusLabel)}</span>
+        </div>
+        <span class="product-code">${escapeHtml(product.codigo)}</span>
+        <h2 id="product-modal-title">${escapeHtml(product.nome)}</h2>
+        ${price}
+        <p class="product-modal-description">${escapeHtml(product.descricao || "Produto selecionado da Vitrine Prime.")}</p>
+        ${renderSizeOptions(product, sold)}
+        <p class="size-warning" aria-live="polite"></p>
+        <dl class="product-modal-specs">
+          ${detailRow("Categoria", product.categoria)}
+          ${detailRow("Subcategoria", product.subcategoria)}
+          ${detailRow("Cor", product.cor)}
+          ${detailRow("Tecido", product.tecido)}
+          ${detailRow("Tamanhos", sizeSummary(product))}
+        </dl>
+        ${action}
+      </div>
+    </div>
+  `;
+}
+
+function openProductModal(productId) {
+  const product = findProductByCardId(productId);
+  if (!product || !productModal || !productModalContent) return;
+
+  productModalContent.innerHTML = renderProductModal(product);
+  productModal.hidden = false;
+  productModal.dataset.productId = productCardId(product);
+  document.body.classList.add("modal-open");
+  requestAnimationFrame(() => productModal.classList.add("open"));
+  productModal.querySelector(".product-modal-close")?.focus({ preventScroll: true });
+}
+
+function closeProductModal() {
+  if (!productModal) return;
+  productModal.classList.remove("open");
+  productModal.hidden = true;
+  productModalContent.innerHTML = "";
+  productModal.dataset.productId = "";
+  document.body.classList.remove("modal-open");
+}
+
 function renderProductCard(product) {
   const sold = isSold(product);
   const theme = getTheme(product);
@@ -208,6 +337,7 @@ function renderProductCard(product) {
   const hasSizes = sizes.length > 0;
   const cardId = productCardId(product);
   const statusLabel = productStatusLabel(product);
+  const primaryImage = primaryProductImage(product);
   const summerBadge = product.categoria === "Moda Verão" ? '<span class="badge badge-summer">Verão</span>' : "";
   const price = product.promocao
     ? `<div class="price-row"><span class="old-price">${formatPrice(product.precoAntigo)}</span><strong>${formatPrice(product.preco)}</strong></div>`
@@ -221,14 +351,14 @@ function renderProductCard(product) {
   return `
     <article class="product-card theme-${theme} ${sold ? "is-sold-out" : ""}" data-product-id="${escapeHtml(cardId)}">
       <div class="product-image">
-        ${imageMarkup(product.imagem, product.nome)}
+        ${imageMarkup(primaryImage, product.nome)}
         ${sold ? '<span class="sold-overlay">Esgotado</span>' : ""}
         ${product.promocao ? '<span class="badge badge-promo">Promoção</span>' : summerBadge}
         <span class="badge badge-status ${sold ? "sold" : "available"}">${escapeHtml(statusLabel)}</span>
       </div>
       <div class="product-info">
         <span class="product-code">${escapeHtml(product.codigo)}</span>
-        <h3>${escapeHtml(product.nome)}</h3>
+        <h3><button class="product-title-button product-details-trigger" type="button" data-product-id="${escapeHtml(cardId)}">${escapeHtml(product.nome)}</button></h3>
         <p class="product-description">${escapeHtml(product.descricao)}</p>
         <dl>
           <div><dt>Categoria</dt><dd>${escapeHtml(product.categoria)}</dd></div>
@@ -240,6 +370,7 @@ function renderProductCard(product) {
         ${renderSizeOptions(product, sold)}
         ${price}
         <p class="size-warning" aria-live="polite"></p>
+        <button class="product-details-button product-details-trigger" type="button" data-product-id="${escapeHtml(cardId)}">Detalhes</button>
         ${action}
       </div>
     </article>
@@ -484,9 +615,49 @@ function setupPromoLinks() {
 
 function setupProductInteractions() {
   document.addEventListener("click", (event) => {
+    if (event.target.closest("[data-modal-close]")) {
+      closeProductModal();
+      return;
+    }
+
+    const thumb = event.target.closest(".product-thumb");
+    if (thumb) {
+      const modal = thumb.closest(".product-modal-grid");
+      const mainImage = modal.querySelector("#product-modal-main-image");
+      const photo = modal.querySelector(".product-modal-photo");
+      modal.querySelectorAll(".product-thumb").forEach((button) => button.classList.remove("active"));
+      thumb.classList.add("active");
+      photo.classList.remove("photo-missing");
+      if (mainImage) {
+        mainImage.src = thumb.dataset.image;
+      } else {
+        photo.insertAdjacentHTML(
+          "afterbegin",
+          `<img id="product-modal-main-image" src="${escapeHtml(thumb.dataset.image)}" alt="Foto do produto" onerror="this.closest('.product-modal-photo').classList.add('photo-missing'); this.remove();">`
+        );
+      }
+      return;
+    }
+
     const sizeButton = event.target.closest(".size-option");
     if (sizeButton && !sizeButton.disabled) {
+      const modal = sizeButton.closest(".product-modal-grid");
+      if (modal) {
+        modal.querySelectorAll(".size-option").forEach((button) => {
+          button.classList.remove("selected");
+          button.setAttribute("aria-pressed", "false");
+        });
+        sizeButton.classList.add("selected");
+        sizeButton.setAttribute("aria-pressed", "true");
+        modal.dataset.selectedSize = sizeButton.dataset.size;
+        const warning = modal.querySelector(".size-warning");
+        if (warning) warning.textContent = "";
+        modal.querySelector(".size-options")?.classList.remove("needs-choice");
+        return;
+      }
+
       const card = sizeButton.closest(".product-card");
+      if (!card) return;
       card.querySelectorAll(".size-option").forEach((button) => {
         button.classList.remove("selected");
         button.setAttribute("aria-pressed", "false");
@@ -497,6 +668,30 @@ function setupProductInteractions() {
       const warning = card.querySelector(".size-warning");
       if (warning) warning.textContent = "";
       card.querySelector(".size-options")?.classList.remove("needs-choice");
+      return;
+    }
+
+    const modalBuyButton = event.target.closest(".product-modal-buy");
+    if (modalBuyButton) {
+      const modal = modalBuyButton.closest(".product-modal-grid");
+      const selectedSize = modal.dataset.selectedSize;
+      const warning = modal.querySelector(".size-warning");
+
+      if (!selectedSize) {
+        if (warning) warning.textContent = "Escolha um tamanho antes de comprar.";
+        modal.querySelector(".size-options")?.classList.add("needs-choice");
+        return;
+      }
+
+      const product = findProductByCardId(modal.dataset.productId);
+      if (!product) return;
+      window.open(whatsappUrl(productMessage(product, selectedSize)), "_blank", "noopener");
+      return;
+    }
+
+    const detailTrigger = event.target.closest(".product-details-trigger");
+    if (detailTrigger) {
+      openProductModal(detailTrigger.dataset.productId);
       return;
     }
 
@@ -517,6 +712,18 @@ function setupProductInteractions() {
     if (!product) return;
 
     window.open(whatsappUrl(productMessage(product, selectedSize)), "_blank", "noopener");
+  });
+
+  document.addEventListener("click", (event) => {
+    const card = event.target.closest(".product-card");
+    if (!card || event.target.closest("a, button, input, select, textarea")) return;
+    openProductModal(card.dataset.productId);
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && productModal && !productModal.hidden) {
+      closeProductModal();
+    }
   });
 }
 
