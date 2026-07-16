@@ -388,6 +388,15 @@ function setActiveFilter(filter) {
 }
 
 function renderMenu() {
+  const drawerHeader = `
+    <div class="drawer-header">
+      <span class="brand-mark drawer-brand-mark">
+        <img class="brand-logo" data-brand-logo src="${escapeHtml(STORE_CONFIG.logoImage || "assets/brand/vitrine-prime-logo.png")}" alt="Logo ${escapeHtml(STORE_CONFIG.storeName)}" />
+      </span>
+      <strong>${escapeHtml(STORE_CONFIG.storeName)}</strong>
+      <button class="drawer-close" type="button" data-menu-close aria-label="Fechar menu">×</button>
+    </div>
+  `;
   const menuItems = SITE_CONTENT.nav
     .map((label) => {
       const dataFilter = CATALOG_FILTERS.includes(label) && label !== "Todos" ? ` data-menu-filter="${escapeHtml(label)}"` : "";
@@ -395,7 +404,7 @@ function renderMenu() {
     })
     .join("");
   const mobileWhatsapp = `<a class="nav-mobile-whatsapp" data-whatsapp-general href="#" target="_blank" rel="noopener">${SITE_CONTENT.buttons.whatsapp}</a>`;
-  navLinks.innerHTML = menuItems + mobileWhatsapp;
+  navLinks.innerHTML = drawerHeader + `<div class="drawer-menu-items">${menuItems}</div>` + mobileWhatsapp;
 }
 
 function renderCategories() {
@@ -584,6 +593,8 @@ function setupMenu() {
   if (menuBackdrop) {
     menuBackdrop.addEventListener("click", closeMenu);
   }
+
+  navLinks.querySelector("[data-menu-close]")?.addEventListener("click", closeMenu);
 
   navLinks.querySelectorAll("a").forEach((link) => {
     link.addEventListener("click", (event) => {

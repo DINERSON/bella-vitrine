@@ -1,4 +1,4 @@
-# Prime Vitrine
+# Vitrine Prime
 
 Site catálogo de moda masculina com venda pelo WhatsApp e painel administrativo em `/admin`.
 
@@ -64,7 +64,7 @@ Opção manual:
 2. Clique em "Add new site" > "Deploy manually".
 3. Arraste a pasta inteira do projeto.
 4. Depois de publicar, abra "Site configuration" > "Change site name".
-5. Escolha um nome como `prime-vitrine`.
+5. Escolha um nome como `vitrine-prime` ou mantenha `prime-vitrine`.
 6. O link ficará parecido com `https://prime-vitrine.netlify.app`.
 
 Opção pelo GitHub:

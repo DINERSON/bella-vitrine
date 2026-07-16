@@ -223,6 +223,18 @@ function productCard(product) {
   const id = product.firestoreId || product.id;
   const images = normalizeImages(product);
   const imageSrc = images[0] || "";
+  const currentStatus = product.status || "Disponível";
+  const statusActions = [
+    currentStatus !== "Disponível"
+      ? '<button class="btn btn-light" type="button" data-action="available">Marcar disponível</button>'
+      : "",
+    currentStatus !== "Vendido"
+      ? '<button class="btn btn-light" type="button" data-action="sold">Marcar vendido</button>'
+      : "",
+    currentStatus !== "Esgotado"
+      ? '<button class="btn btn-light" type="button" data-action="exhausted">Marcar esgotado</button>'
+      : "",
+  ].join("");
   const image = imageSrc
     ? `<img src="${escapeHtml(imageSrc)}" alt="${escapeHtml(product.nome)}" onerror="this.closest('.admin-product-image').classList.add('missing'); this.remove();">`
     : "";
@@ -243,9 +255,7 @@ function productCard(product) {
       </div>
       <div class="admin-product-actions">
         <button class="btn btn-outline" type="button" data-action="edit">Editar</button>
-        <button class="btn btn-light" type="button" data-action="${product.status === "Vendido" ? "available" : "sold"}">
-          ${product.status === "Vendido" ? "Marcar disponível" : "Marcar vendido"}
-        </button>
+        ${statusActions}
         <button class="btn danger-button" type="button" data-action="delete">Excluir</button>
       </div>
     </article>
@@ -327,6 +337,7 @@ async function handleProductAction(event) {
     button.disabled = true;
     if (action === "sold") await firebase.updateProductStatus(id, "Vendido");
     if (action === "available") await firebase.updateProductStatus(id, "Disponível");
+    if (action === "exhausted") await firebase.updateProductStatus(id, "Esgotado");
     if (action === "delete") {
       const confirmed = window.confirm(`Excluir ${product.codigo} - ${product.nome}?`);
       if (!confirmed) return;

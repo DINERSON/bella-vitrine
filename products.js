@@ -50,7 +50,7 @@ const SITE_CONTENT = {
   },
   sections: {
     categoriesEyebrow: "Escolha por identidade",
-    categoriesTitle: "Compre por estilo",
+    categoriesTitle: "Categorias",
     categoriesDescription:
       "A vitrine é organizada por universos visuais para facilitar a escolha no celular.",
     categoryAction: "Ver produtos",
