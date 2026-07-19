@@ -102,7 +102,7 @@ function productStatusLabel(product) {
 
 function productMessage(product, selectedSize = "") {
   if (selectedSize) {
-    return `Olá, tenho interesse no produto ${product.codigo} - ${product.nome}, tamanho ${selectedSize}. Está disponível?`;
+    return `Olá, tenho interesse no produto ${product.codigo} - ${product.nome}, tamanho/número ${selectedSize}. Está disponível?`;
   }
 
   return replaceVars(STORE_CONFIG.whatsappProductMessage, {
@@ -134,7 +134,7 @@ function primaryProductImage(product) {
 function sizeSummary(product) {
   const sizes = normalizeSizes(product);
   if (!sizes.length) return "";
-  return sizes.map((size) => size.label).join(" / ");
+  return sizes.map((size) => size.label).join(" | ");
 }
 
 function renderSizeOptions(product, sold) {
@@ -151,7 +151,7 @@ function renderSizeOptions(product, sold) {
           type="button"
           data-size="${escapeHtml(size.label)}"
           ${available ? "" : "disabled"}
-          aria-label="Tamanho ${escapeHtml(size.label)} - ${escapeHtml(title)}"
+          aria-label="Tamanho ou número ${escapeHtml(size.label)} - ${escapeHtml(title)}"
           title="${escapeHtml(title)}"
         >
           ${escapeHtml(size.label)}
@@ -161,8 +161,8 @@ function renderSizeOptions(product, sold) {
     .join("");
 
   return `
-    <div class="size-selector" aria-label="Escolha o tamanho">
-      <span>Tamanho</span>
+    <div class="size-selector" aria-label="Escolha o tamanho ou número">
+      <span>Tamanho/Número</span>
       <div class="size-options">${options}</div>
     </div>
   `;
@@ -721,7 +721,7 @@ function setupProductInteractions() {
       const warning = modal.querySelector(".size-warning");
 
       if (!selectedSize) {
-        if (warning) warning.textContent = "Escolha um tamanho antes de comprar.";
+        if (warning) warning.textContent = "Escolha um tamanho/número antes de comprar.";
         modal.querySelector(".size-options")?.classList.add("needs-choice");
         return;
       }
@@ -746,7 +746,7 @@ function setupProductInteractions() {
     const warning = card.querySelector(".size-warning");
 
     if (!selectedSize) {
-      if (warning) warning.textContent = "Escolha um tamanho antes de comprar.";
+      if (warning) warning.textContent = "Escolha um tamanho/número antes de comprar.";
       card.querySelector(".size-options")?.classList.add("needs-choice");
       return;
     }

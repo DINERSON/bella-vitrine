@@ -175,10 +175,25 @@
               <option value="Oculos"></option>
               <option value="Outros"></option>
             </datalist>
+            <label class="full-field">
+              Tipo de grade
+              <select name="sizeType" id="size-type-select">
+                <option value="roupas">Roupas PP / P / M / G / GG / XG</option>
+                <option value="calcas_shorts">Calças e Shorts</option>
+                <option value="infantil">Infantil</option>
+                <option value="unico">Único</option>
+                <option value="personalizado">Personalizado</option>
+                <option value="sem_tamanho">Sem tamanho</option>
+              </select>
+            </label>
             <fieldset class="stock-fieldset full-field">
               <legend>Tamanhos e estoque</legend>
               <p class="admin-muted">Deixe vazio para não mostrar o tamanho. Use 0 para mostrar como esgotado.</p>
-              <div class="stock-grid">
+              <label class="custom-size-row" id="custom-size-row" hidden>
+                Tamanhos personalizados
+                <input name="customSizes" placeholder="Ex: P,M,G ou 1,2,3" />
+              </label>
+              <div class="stock-grid" id="stock-grid">
                 <label>
                   P
                   <input name="stock_P" type="number" min="0" step="1" placeholder="0" />

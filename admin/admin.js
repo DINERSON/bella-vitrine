@@ -18,6 +18,9 @@ const adminSearch = document.querySelector("#admin-search");
 const adminStatusFilter = document.querySelector("#admin-status-filter");
 const refreshProductsButton = document.querySelector("#refresh-products");
 const imagePreviewGrid = document.querySelector("#image-preview-grid");
+const sizeTypeSelect = document.querySelector("#size-type-select");
+const stockGrid = document.querySelector("#stock-grid");
+const customSizeRow = document.querySelector("#custom-size-row");
 
 let products = [];
 
@@ -30,6 +33,15 @@ const STOCK_FIELDS = [
   { label: "Único", field: "stock_Unico" },
 ];
 
+const SIZE_GRIDS = {
+  roupas: ["PP", "P", "M", "G", "GG", "XG"],
+  calcas_shorts: ["32", "33", "34", "35", "36", "37", "38", "39", "40", "42", "44", "46", "48"],
+  infantil: ["1", "2", "3", "4", "6", "8", "10", "12", "14", "16"],
+  unico: ["Unico"],
+  personalizado: [],
+  sem_tamanho: [],
+};
+
 function normalizeKey(value) {
   return String(value || "")
     .normalize("NFD")
@@ -39,6 +51,71 @@ function normalizeKey(value) {
 
 function stockKey(label) {
   return normalizeKey(label) === "unico" ? "Unico" : label;
+}
+
+function normalizeSizeType(sizeType) {
+  const value = normalizeKey(sizeType).replace(/-/g, "_");
+  if (value === "calcados") return "calcas_shorts";
+  if (value === "calcas_e_shorts") return "calcas_shorts";
+  return SIZE_GRIDS[value] ? value : "roupas";
+}
+
+function stockFieldName(label) {
+  return `stock_${stockKey(label)}`;
+}
+
+function fieldsForSizeType(sizeType, product = null) {
+  const normalized = normalizeSizeType(sizeType);
+  if (normalized === "personalizado") {
+    const customSizes = normalizeSizes(product || {});
+    return customSizes.length ? customSizes.map((size) => size.label) : [];
+  }
+  return SIZE_GRIDS[normalized] || SIZE_GRIDS.roupas;
+}
+
+function inferSizeType(product) {
+  const savedType = normalizeSizeType(product?.sizeType);
+  if (product?.sizeType) return savedType;
+
+  const labels = normalizeSizes(product).map((size) => size.label);
+  if (!labels.length) return "roupas";
+  if (labels.every((label) => /^\d+$/.test(label))) return "calcas_shorts";
+  if (labels.length === 1 && normalizeKey(labels[0]) === "unico") return "unico";
+  return "roupas";
+}
+
+function renderStockGrid(sizeType = "roupas", product = null) {
+  if (!stockGrid) return;
+
+  const normalized = normalizeSizeType(sizeType);
+  const fields =
+    normalized === "personalizado" && !product
+      ? customSizeLabels(new FormData(productForm))
+      : fieldsForSizeType(normalized, product);
+  const currentSizes = normalizeSizes(product || {});
+  const stockByLabel = currentSizes.reduce((stock, size) => {
+    stock[normalizeKey(size.label)] = size.estoque;
+    return stock;
+  }, {});
+
+  if (customSizeRow) customSizeRow.hidden = normalized !== "personalizado";
+
+  if (normalized === "sem_tamanho") {
+    stockGrid.innerHTML = '<div class="empty-state">Produto sem controle de tamanho ou numeração.</div>';
+    return;
+  }
+
+  stockGrid.innerHTML = fields
+    .map((label) => {
+      const value = stockByLabel[normalizeKey(label)];
+      return `
+        <label>
+          ${escapeHtml(label)}
+          <input name="${escapeHtml(stockFieldName(label))}" type="number" min="0" step="1" placeholder="0" value="${value ?? ""}" />
+        </label>
+      `;
+    })
+    .join("");
 }
 
 function isFirebaseReady() {
@@ -145,9 +222,21 @@ function isUnavailable(product) {
   return status === "vendido" || status === "esgotado" || (sizes.length > 0 && sizes.every((size) => size.estoque <= 0));
 }
 
-function sizesFromForm(data) {
-  return STOCK_FIELDS.map(({ label, field }) => {
-    const rawValue = String(data.get(field) || "").trim();
+function customSizeLabels(data) {
+  return String(data.get("customSizes") || "")
+    .split(/[\/,|;]+/)
+    .map((label) => label.trim())
+    .filter(Boolean);
+}
+
+function sizesFromForm(data, sizeType) {
+  const normalized = normalizeSizeType(sizeType);
+  const labels = normalized === "personalizado" ? customSizeLabels(data) : fieldsForSizeType(normalized);
+
+  if (normalized === "sem_tamanho") return [];
+
+  return labels.map((label) => {
+    const rawValue = String(data.get(stockFieldName(label)) || "").trim();
     if (rawValue === "") return null;
     return {
       label,
@@ -165,19 +254,17 @@ function sizesStockFromSizes(sizes) {
 }
 
 function clearStockFields() {
-  STOCK_FIELDS.forEach(({ field }) => {
-    productForm.elements[field].value = "";
-  });
+  if (productForm.elements.customSizes) productForm.elements.customSizes.value = "";
+  renderStockGrid(sizeTypeSelect?.value || "roupas");
 }
 
 function fillStockFields(product) {
-  clearStockFields();
-  normalizeSizes(product).forEach((size) => {
-    const field = STOCK_FIELDS.find((item) => normalizeKey(item.label) === normalizeKey(size.label))?.field;
-    if (field && productForm.elements[field]) {
-      productForm.elements[field].value = size.estoque;
-    }
-  });
+  const sizeType = inferSizeType(product);
+  if (sizeTypeSelect) sizeTypeSelect.value = sizeType;
+  if (productForm.elements.customSizes && sizeType === "personalizado") {
+    productForm.elements.customSizes.value = normalizeSizes(product).map((size) => size.label).join(", ");
+  }
+  renderStockGrid(sizeType, product);
 }
 
 function sizesSummary(product) {
@@ -254,13 +341,15 @@ function fillCategoryOptions() {
 function productFromForm() {
   const data = new FormData(productForm);
   const imagens = imagesFromForm(data);
-  const tamanhos = sizesFromForm(data);
+  const sizeType = normalizeSizeType(data.get("sizeType"));
+  const tamanhos = sizesFromForm(data, sizeType);
   return {
     firestoreId: data.get("firestoreId"),
     codigo: data.get("codigo").trim(),
     nome: data.get("nome").trim(),
     categoria: data.get("categoria"),
     subcategoria: data.get("subcategoria").trim(),
+    sizeType,
     tamanhos,
     sizesStock: sizesStockFromSizes(tamanhos),
     cor: data.get("cor").trim(),
@@ -279,6 +368,7 @@ function productFromForm() {
 
 function resetForm() {
   productForm.reset();
+  if (sizeTypeSelect) sizeTypeSelect.value = "roupas";
   clearStockFields();
   clearImageFields();
   productForm.elements.firestoreId.value = "";
@@ -535,6 +625,13 @@ refreshProductsButton?.addEventListener("click", loadProducts);
   productForm.elements[field]?.addEventListener("change", renderImagePreview);
   productForm.elements[field]?.addEventListener("input", renderImagePreview);
 });
+sizeTypeSelect?.addEventListener("change", () => {
+  if (productForm.elements.customSizes) productForm.elements.customSizes.value = "";
+  renderStockGrid(sizeTypeSelect.value);
+});
+productForm.elements.customSizes?.addEventListener("input", () => {
+  renderStockGrid("personalizado");
+});
 
 if (isFirebaseReady()) {
   firebase.watchAuth((user) => {
@@ -547,3 +644,4 @@ if (isFirebaseReady()) {
 
 loadStoreConfig();
 renderImagePreview();
+renderStockGrid("roupas");
