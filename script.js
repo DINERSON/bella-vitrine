@@ -640,7 +640,9 @@ function setupMenu() {
     const filter = link.dataset.menuFilter;
     if (filter) {
       event.preventDefault();
-      setActiveFilter(filter);
+      closeMenu();
+      requestAnimationFrame(() => setActiveFilter(filter));
+      return;
     }
     closeMenu();
   });
@@ -649,6 +651,12 @@ function setupMenu() {
     if (event.key === "Escape" && menuToggle.getAttribute("aria-expanded") === "true") {
       closeMenu();
       menuToggle.focus({ preventScroll: true });
+    }
+  });
+
+  window.addEventListener("resize", () => {
+    if (window.innerWidth > 1180 && menuToggle.getAttribute("aria-expanded") === "true") {
+      closeMenu();
     }
   });
 }
