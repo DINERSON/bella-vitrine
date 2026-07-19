@@ -124,12 +124,27 @@ Se todos os tamanhos estiverem com estoque `0`, o produto aparece como esgotado 
 Existem duas formas:
 
 1. Upload pelo celular:
-   selecione Foto principal, Foto 2, Foto 3 e Foto 4. As imagens vao para o Firebase Storage.
+   selecione `Foto principal upload`, `Foto 2 upload`, `Foto 3 upload` e `Foto 4 upload`.
+   As imagens vao para o Firebase Storage na pasta `products/`.
+   Sao aceitos arquivos `jpg`, `jpeg`, `png` e `webp`.
 
 2. URL manual:
-   cole URLs nos campos `Imagem principal`, `Foto 2`, `Foto 3` e `Foto 4`.
+   cole URLs nos campos `Foto principal URL`, `Foto 2 URL`, `Foto 3 URL` e `Foto 4 URL`.
 
-Se o Storage ainda nao estiver configurado, use os campos de URL.
+Se usar upload e URL no mesmo campo, o upload tem prioridade.
+
+Os arquivos enviados pelo painel seguem este formato:
+
+```text
+products/{codigoProduto}-{timestamp}-{numero}.jpg
+```
+
+Depois do upload, o painel salva a URL publica no Firestore:
+
+- a primeira foto disponivel fica em `imagem`;
+- todas as fotos ficam no array `imagens`.
+
+Assim a vitrine publica e o modal de detalhes carregam automaticamente as fotos cadastradas no painel.
 
 ## WhatsApp
 

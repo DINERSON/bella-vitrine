@@ -5,6 +5,7 @@ const configured = Boolean(config.apiKey && config.projectId && config.appId);
 let app = null;
 let auth = null;
 let db = null;
+let storage = null;
 let firebaseModules = null;
 let initPromise = null;
 
@@ -19,7 +20,8 @@ async function ensureFirebase() {
     import(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-app.js`),
     import(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-auth.js`),
     import(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-firestore.js`),
-  ]).then(([appModule, authModule, firestoreModule]) => {
+    import(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-storage.js`),
+  ]).then(([appModule, authModule, firestoreModule, storageModule]) => {
     firebaseModules = {
       initializeApp: appModule.initializeApp,
       getAuth: authModule.getAuth,
@@ -38,11 +40,16 @@ async function ensureFirebase() {
       serverTimestamp: firestoreModule.serverTimestamp,
       setDoc: firestoreModule.setDoc,
       updateDoc: firestoreModule.updateDoc,
+      getDownloadURL: storageModule.getDownloadURL,
+      getStorage: storageModule.getStorage,
+      ref: storageModule.ref,
+      uploadBytes: storageModule.uploadBytes,
     };
 
     app = firebaseModules.initializeApp(config);
     auth = firebaseModules.getAuth(app);
     db = firebaseModules.getFirestore(app);
+    storage = firebaseModules.getStorage(app);
   });
 
   return initPromise;
@@ -144,6 +151,53 @@ function sizesStockFromProduct(product) {
   return {};
 }
 
+function safeFileNamePart(value, fallback = "produto") {
+  return String(value || fallback)
+    .trim()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^A-Za-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "") || fallback;
+}
+
+async function uploadProductImages(imageFiles, productCode) {
+  const files = Array.isArray(imageFiles) ? imageFiles : [];
+  const timestamp = Date.now();
+  const safeCode = safeFileNamePart(productCode);
+  const uploads = [];
+  const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+
+  for (const item of files) {
+    const file = item?.file || item;
+    if (!file) continue;
+    if (file.type && !allowedTypes.includes(file.type)) {
+      const error = new Error("UPLOAD_ERROR");
+      error.uploadError = true;
+      throw error;
+    }
+
+    const index = Number.isFinite(Number(item?.index)) ? Number(item.index) : uploads.length;
+    const imageNumber = index + 1;
+    const imageRef = firebaseModules.ref(storage, `products/${safeCode}-${timestamp}-${imageNumber}.jpg`);
+    try {
+      await firebaseModules.uploadBytes(imageRef, file, {
+        contentType: file.type || "image/jpeg",
+      });
+      uploads.push({
+        index,
+        url: await firebaseModules.getDownloadURL(imageRef),
+      });
+    } catch (error) {
+      const uploadError = new Error("UPLOAD_ERROR");
+      uploadError.uploadError = true;
+      uploadError.cause = error;
+      throw uploadError;
+    }
+  }
+
+  return uploads;
+}
+
 async function fetchStoreConfig() {
   if (!configured) return null;
   await ensureFirebase();
@@ -163,7 +217,7 @@ async function saveStoreConfig(storeConfig) {
   );
 }
 
-async function saveProduct(product, existingId = null) {
+async function saveProduct(product, imageFiles = [], existingId = null) {
   await ensureFirebase();
   const sizesStock = sizesStockFromProduct(product);
 
@@ -189,7 +243,15 @@ async function saveProduct(product, existingId = null) {
     updatedAt: firebaseModules.serverTimestamp(),
   };
 
-  payload.imagens = [payload.imagem, ...payload.imagens].filter(Boolean).filter((image, index, list) => list.indexOf(image) === index);
+  const imageSlots = Array.isArray(product.imagens) ? [...product.imagens] : [];
+  if (product.imagem && !imageSlots[0]) imageSlots[0] = product.imagem;
+  const uploadedImages = await uploadProductImages(imageFiles, product.codigo);
+  uploadedImages.forEach(({ index, url }) => {
+    imageSlots[index] = url;
+  });
+
+  payload.imagem = imageSlots.find(Boolean) || "";
+  payload.imagens = imageSlots.filter(Boolean).filter((image, index, list) => list.indexOf(image) === index);
 
   if (existingId) {
     await firebaseModules.updateDoc(firebaseModules.doc(db, "products", existingId), payload);

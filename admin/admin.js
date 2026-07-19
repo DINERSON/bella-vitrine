@@ -42,6 +42,13 @@ const SIZE_GRIDS = {
   sem_tamanho: [],
 };
 
+const PHOTO_FIELDS = [
+  { file: "foto1", url: "imagemPrincipal" },
+  { file: "foto2", url: "imagem2" },
+  { file: "foto3", url: "imagem3" },
+  { file: "foto4", url: "imagem4" },
+];
+
 function normalizeKey(value) {
   return String(value || "")
     .normalize("NFD")
@@ -282,28 +289,31 @@ function normalizeImages(product) {
 }
 
 function imagesFromForm(data) {
-  return [
-    data.get("imagemPrincipal"),
-    data.get("imagem2"),
-    data.get("imagem3"),
-    data.get("imagem4"),
-  ]
-    .map((image) => String(image || "").trim())
-    .filter(Boolean)
-    .filter((image, index, list) => list.indexOf(image) === index);
+  return PHOTO_FIELDS.map(({ url }) => String(data.get(url) || "").trim());
+}
+
+function imageFilesFromForm() {
+  return PHOTO_FIELDS.map(({ file }, index) => ({
+    file: productForm.elements[file]?.files?.[0] || null,
+    index,
+  })).filter((item) => item.file);
 }
 
 function clearImageFields() {
-  ["imagemPrincipal", "imagem2", "imagem3", "imagem4"].forEach((field) => {
-    productForm.elements[field].value = "";
+  PHOTO_FIELDS.forEach(({ file, url }) => {
+    productForm.elements[url].value = "";
+    if (productForm.elements[file]) productForm.elements[file].value = "";
   });
 }
 
 function renderImagePreview() {
   if (!imagePreviewGrid) return;
 
-  const urlImages = imagesFromForm(new FormData(productForm));
-  const images = urlImages.slice(0, 4);
+  const data = new FormData(productForm);
+  const images = PHOTO_FIELDS.map(({ file, url }) => {
+    const selectedFile = productForm.elements[file]?.files?.[0];
+    return selectedFile ? URL.createObjectURL(selectedFile) : String(data.get(url) || "").trim();
+  });
 
   imagePreviewGrid.innerHTML = Array.from({ length: 4 })
     .map((_, index) => {
@@ -325,10 +335,9 @@ function renderImagePreview() {
 function fillImageFields(product) {
   clearImageFields();
   const images = normalizeImages(product);
-  productForm.elements.imagemPrincipal.value = images[0] || "";
-  productForm.elements.imagem2.value = images[1] || "";
-  productForm.elements.imagem3.value = images[2] || "";
-  productForm.elements.imagem4.value = images[3] || "";
+  PHOTO_FIELDS.forEach(({ url }, index) => {
+    productForm.elements[url].value = images[index] || "";
+  });
 }
 
 function fillCategoryOptions() {
@@ -361,7 +370,7 @@ function productFromForm() {
     destaque: data.get("destaque") === "on" || data.get("maisVendido") === "on",
     maisVendido: data.get("maisVendido") === "on",
     promocao: data.get("promocao") === "on",
-    imagem: imagens[0] || data.get("imagem"),
+    imagem: imagens.find(Boolean) || data.get("imagem"),
     imagens,
   };
 }
@@ -525,18 +534,24 @@ async function handleLogin(event) {
 async function handleSaveProduct(event) {
   event.preventDefault();
   const product = productFromForm();
+  const imageFiles = imageFilesFromForm();
   const existingId = product.firestoreId || null;
 
   setMessage(formMessage, "Salvando produto...");
   productForm.querySelector("#save-product").disabled = true;
 
   try {
-    await firebase.saveProduct(product, existingId);
+    await firebase.saveProduct(product, imageFiles, existingId);
     resetForm();
     setMessage(formMessage, "Produto salvo com sucesso.", "success");
     await loadProducts();
   } catch (error) {
-    setMessage(formMessage, "Não foi possível salvar. Confira sua internet e tente novamente.", "error");
+    const uploadFailed = error?.message === "UPLOAD_ERROR" || error?.uploadError;
+    setMessage(
+      formMessage,
+      uploadFailed ? "Erro ao enviar foto. Tente novamente." : "Não foi possível salvar. Confira sua internet e tente novamente.",
+      "error"
+    );
   } finally {
     productForm.querySelector("#save-product").disabled = false;
   }
@@ -621,7 +636,7 @@ logoutButton.addEventListener("click", () => firebase.logout());
 adminSearch?.addEventListener("input", renderProducts);
 adminStatusFilter?.addEventListener("change", renderProducts);
 refreshProductsButton?.addEventListener("click", loadProducts);
-["imagemPrincipal", "imagem2", "imagem3", "imagem4"].forEach((field) => {
+PHOTO_FIELDS.flatMap(({ file, url }) => [file, url]).forEach((field) => {
   productForm.elements[field]?.addEventListener("change", renderImagePreview);
   productForm.elements[field]?.addEventListener("input", renderImagePreview);
 });
