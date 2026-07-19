@@ -5,7 +5,6 @@ const configured = Boolean(config.apiKey && config.projectId && config.appId);
 let app = null;
 let auth = null;
 let db = null;
-let storage = null;
 let firebaseModules = null;
 let initPromise = null;
 
@@ -20,8 +19,7 @@ async function ensureFirebase() {
     import(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-app.js`),
     import(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-auth.js`),
     import(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-firestore.js`),
-    import(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-storage.js`),
-  ]).then(([appModule, authModule, firestoreModule, storageModule]) => {
+  ]).then(([appModule, authModule, firestoreModule]) => {
     firebaseModules = {
       initializeApp: appModule.initializeApp,
       getAuth: authModule.getAuth,
@@ -40,16 +38,11 @@ async function ensureFirebase() {
       serverTimestamp: firestoreModule.serverTimestamp,
       setDoc: firestoreModule.setDoc,
       updateDoc: firestoreModule.updateDoc,
-      getDownloadURL: storageModule.getDownloadURL,
-      getStorage: storageModule.getStorage,
-      ref: storageModule.ref,
-      uploadBytes: storageModule.uploadBytes,
     };
 
     app = firebaseModules.initializeApp(config);
     auth = firebaseModules.getAuth(app);
     db = firebaseModules.getFirestore(app);
-    storage = firebaseModules.getStorage(app);
   });
 
   return initPromise;
@@ -150,26 +143,6 @@ function sizesStockFromProduct(product) {
   return {};
 }
 
-function normalizeImageFiles(imageFiles) {
-  if (!imageFiles) return [];
-  if (imageFiles instanceof File) return [imageFiles];
-  return Array.from(imageFiles).filter(Boolean);
-}
-
-async function uploadProductImages(imageFiles) {
-  const files = normalizeImageFiles(imageFiles);
-  const uploaded = [];
-
-  for (const imageFile of files) {
-    const safeName = imageFile.name.replace(/[^\w.-]+/g, "-").toLowerCase();
-    const imageRef = firebaseModules.ref(storage, `products/${Date.now()}-${safeName}`);
-    await firebaseModules.uploadBytes(imageRef, imageFile);
-    uploaded.push(await firebaseModules.getDownloadURL(imageRef));
-  }
-
-  return uploaded;
-}
-
 async function fetchStoreConfig() {
   if (!configured) return null;
   await ensureFirebase();
@@ -189,7 +162,7 @@ async function saveStoreConfig(storeConfig) {
   );
 }
 
-async function saveProduct(product, imageFiles, existingId = null) {
+async function saveProduct(product, existingId = null) {
   await ensureFirebase();
   const sizesStock = sizesStockFromProduct(product);
 
@@ -213,20 +186,6 @@ async function saveProduct(product, imageFiles, existingId = null) {
     imagens: Array.isArray(product.imagens) ? product.imagens : [],
     updatedAt: firebaseModules.serverTimestamp(),
   };
-
-  let uploadedImages = [];
-  try {
-    uploadedImages = await uploadProductImages(imageFiles);
-  } catch (error) {
-    const hasUrlImages = Boolean(payload.imagem || payload.imagens.length);
-    if (!hasUrlImages) throw error;
-    console.warn("Upload de imagem falhou. Salvando produto com URLs informadas.", error);
-  }
-
-  if (uploadedImages.length) {
-    payload.imagem = uploadedImages[0];
-    payload.imagens = [...uploadedImages, ...payload.imagens];
-  }
 
   payload.imagens = [payload.imagem, ...payload.imagens].filter(Boolean).filter((image, index, list) => list.indexOf(image) === index);
 

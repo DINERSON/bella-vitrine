@@ -206,12 +206,6 @@ function imagesFromForm(data) {
     .filter((image, index, list) => list.indexOf(image) === index);
 }
 
-function imageFilesFromForm() {
-  return ["foto1", "foto2", "foto3", "foto4"]
-    .map((field) => productForm.elements[field]?.files?.[0])
-    .filter(Boolean);
-}
-
 function clearImageFields() {
   ["imagemPrincipal", "imagem2", "imagem3", "imagem4"].forEach((field) => {
     productForm.elements[field].value = "";
@@ -222,11 +216,7 @@ function renderImagePreview() {
   if (!imagePreviewGrid) return;
 
   const urlImages = imagesFromForm(new FormData(productForm));
-  const fileImages = ["foto1", "foto2", "foto3", "foto4"]
-    .map((field) => productForm.elements[field]?.files?.[0])
-    .filter(Boolean)
-    .map((file) => URL.createObjectURL(file));
-  const images = [...fileImages, ...urlImages].slice(0, 4);
+  const images = urlImages.slice(0, 4);
 
   imagePreviewGrid.innerHTML = Array.from({ length: 4 })
     .map((_, index) => {
@@ -293,9 +283,6 @@ function resetForm() {
   clearImageFields();
   productForm.elements.firestoreId.value = "";
   productForm.elements.imagem.value = "";
-  ["foto1", "foto2", "foto3", "foto4"].forEach((field) => {
-    if (productForm.elements[field]) productForm.elements[field].value = "";
-  });
   formTitle.textContent = "Cadastrar produto";
   setMessage(formMessage, "");
   renderImagePreview();
@@ -448,14 +435,13 @@ async function handleLogin(event) {
 async function handleSaveProduct(event) {
   event.preventDefault();
   const product = productFromForm();
-  const imageFiles = imageFilesFromForm();
   const existingId = product.firestoreId || null;
 
   setMessage(formMessage, "Salvando produto...");
   productForm.querySelector("#save-product").disabled = true;
 
   try {
-    await firebase.saveProduct(product, imageFiles, existingId);
+    await firebase.saveProduct(product, existingId);
     resetForm();
     setMessage(formMessage, "Produto salvo com sucesso.", "success");
     await loadProducts();
@@ -545,7 +531,7 @@ logoutButton.addEventListener("click", () => firebase.logout());
 adminSearch?.addEventListener("input", renderProducts);
 adminStatusFilter?.addEventListener("change", renderProducts);
 refreshProductsButton?.addEventListener("click", loadProducts);
-["imagemPrincipal", "imagem2", "imagem3", "imagem4", "foto1", "foto2", "foto3", "foto4"].forEach((field) => {
+["imagemPrincipal", "imagem2", "imagem3", "imagem4"].forEach((field) => {
   productForm.elements[field]?.addEventListener("change", renderImagePreview);
   productForm.elements[field]?.addEventListener("input", renderImagePreview);
 });
