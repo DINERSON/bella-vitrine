@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 900" role="img" aria-labelledby="title desc">
+  <title id="title">Logo Vitrine Moda</title>
+  <desc id="desc">Monograma VM em dourado e azul sobre fundo escuro premium.</desc>
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="68%">
+      <stop offset="0%" stop-color="#10284a"/>
+      <stop offset="48%" stop-color="#05070b"/>
+      <stop offset="100%" stop-color="#02040a"/>
+    </radialGradient>
+    <linearGradient id="gold" x1="14%" y1="14%" x2="86%" y2="82%">
+      <stop offset="0%" stop-color="#fff2b8"/>
+      <stop offset="34%" stop-color="#d8b24a"/>
+      <stop offset="66%" stop-color="#8a6418"/>
+      <stop offset="100%" stop-color="#f4d574"/>
+    </linearGradient>
+    <linearGradient id="blue" x1="20%" y1="18%" x2="82%" y2="84%">
+      <stop offset="0%" stop-color="#60a5fa"/>
+      <stop offset="55%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#07162d"/>
+    </linearGradient>
+    <filter id="softGlow" x="-25%" y="-25%" width="150%" height="150%">
+      <feGaussianBlur stdDeviation="9" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect width="900" height="900" fill="url(#bg)"/>
+  <circle cx="450" cy="438" r="305" fill="none" stroke="#c9a227" stroke-opacity=".28" stroke-width="3"/>
+  <circle cx="450" cy="438" r="248" fill="none" stroke="#2563eb" stroke-opacity=".25" stroke-width="2"/>
+  <path d="M186 265h92l151 321 151-321h92L465 692h-72L186 265Z" fill="url(#gold)" filter="url(#softGlow)"/>
+  <path d="M514 608V265h73l122 175 122-175h73v343h-82V404L709 562h-10L586 405v203h-72Z" fill="url(#gold)"/>
+  <path d="M362 602 503 304h55L421 602h-59Z" fill="url(#blue)" opacity=".92"/>
+  <path d="M250 690h400" stroke="#c9a227" stroke-width="5" stroke-linecap="round"/>
+  <path d="M405 742h90" stroke="#f4d574" stroke-width="4" stroke-linecap="round"/>
+  <text x="450" y="770" text-anchor="middle" fill="#fff8dc" font-family="Montserrat, Segoe UI, Arial, sans-serif" font-size="58" font-weight="700" letter-spacing="18">VITRINE</text>
+  <text x="450" y="830" text-anchor="middle" fill="#d8b24a" font-family="Montserrat, Segoe UI, Arial, sans-serif" font-size="52" font-weight="700" letter-spacing="14">MODA</text>
+</svg>

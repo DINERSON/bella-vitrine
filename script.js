@@ -292,7 +292,7 @@ function renderProductModal(product) {
         <span class="product-code">${escapeHtml(product.codigo)}</span>
         <h2 id="product-modal-title">${escapeHtml(product.nome)}</h2>
         ${price}
-        <p class="product-modal-description">${escapeHtml(product.descricao || "Produto selecionado da Vitrine Prime.")}</p>
+        <p class="product-modal-description">${escapeHtml(product.descricao || "Produto selecionado da Vitrine Moda.")}</p>
         ${renderSizeOptions(product, sold)}
         <p class="size-warning" aria-live="polite"></p>
         <dl class="product-modal-specs">
@@ -390,7 +390,7 @@ function renderMenu() {
   const drawerHeader = `
     <div class="drawer-header">
       <span class="brand-mark drawer-brand-mark">
-        <img class="brand-logo" data-brand-logo src="${escapeHtml(STORE_CONFIG.logoImage || "assets/brand/vitrine-prime-logo.png")}" alt="Logo ${escapeHtml(STORE_CONFIG.storeName)}" />
+        <img class="brand-logo" data-brand-logo src="${escapeHtml(STORE_CONFIG.logoImage || "assets/brand/logo-vitrine-moda.svg")}" alt="Logo ${escapeHtml(STORE_CONFIG.storeName)}" />
       </span>
       <strong>${escapeHtml(STORE_CONFIG.storeName)}</strong>
       <button class="drawer-close" type="button" data-menu-close aria-label="Fechar menu">×</button>
@@ -535,11 +535,11 @@ function applyStoreConfig() {
   });
   document.querySelectorAll(".brand-mark").forEach((element) => {
     if (!element.querySelector("img")) {
-      element.textContent = STORE_CONFIG.logoInitials || "VP";
+      element.textContent = STORE_CONFIG.logoInitials || "VM";
     }
   });
   document.querySelectorAll("[data-brand-logo]").forEach((image) => {
-    image.src = STORE_CONFIG.logoImage || "assets/brand/vitrine-prime-logo.png";
+    image.src = STORE_CONFIG.logoImage || "assets/brand/logo-vitrine-moda.svg";
     image.alt = `Logo ${STORE_CONFIG.storeName}`;
   });
   document.querySelectorAll("[data-whatsapp-general]").forEach((link) => {
@@ -553,12 +553,18 @@ function applyStoreConfig() {
   setText("#hero-catalog-button", SITE_CONTENT.buttons.viewCatalog);
 
   const heroImage = document.querySelector("#hero-image");
-  heroImage.src = SITE_CONTENT.hero.image;
-  heroImage.alt = SITE_CONTENT.hero.imageAlt;
-  heroImage.onerror = function () {
-    this.closest(".hero-media").classList.add("hero-no-image");
-    this.remove();
-  };
+  if (SITE_CONTENT.hero.image) {
+    heroImage.src = SITE_CONTENT.hero.image;
+    heroImage.alt = SITE_CONTENT.hero.imageAlt;
+    heroImage.hidden = false;
+    heroImage.onerror = function () {
+      this.closest(".hero-media").classList.add("hero-no-image");
+      this.hidden = true;
+    };
+  } else {
+    heroImage.hidden = true;
+    heroImage.closest(".hero-media").classList.add("hero-no-image");
+  }
 
   setText("#news-eyebrow", SITE_CONTENT.sections.newsEyebrow);
   setText("#novidades-title", SITE_CONTENT.sections.newsTitle);

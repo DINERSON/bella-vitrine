@@ -29,12 +29,12 @@ const STOCK_FIELDS = [
   { label: "M", field: "stock_M" },
   { label: "G", field: "stock_G" },
   { label: "GG", field: "stock_GG" },
-  { label: "XG", field: "stock_XG" },
+  { label: "XL", field: "stock_XL" },
   { label: "Único", field: "stock_Unico" },
 ];
 
 const SIZE_GRIDS = {
-  roupas: ["PP", "P", "M", "G", "GG", "XG"],
+  roupas: ["P", "M", "G", "GG", "XL"],
   calcas_shorts: ["32", "33", "34", "35", "36", "37", "38", "39", "40", "42", "44", "46", "48"],
   infantil: ["1", "2", "3", "4", "6", "8", "10", "12", "14", "16"],
   unico: ["Unico"],
@@ -77,7 +77,9 @@ function fieldsForSizeType(sizeType, product = null) {
     const customSizes = normalizeSizes(product || {});
     return customSizes.length ? customSizes.map((size) => size.label) : [];
   }
-  return SIZE_GRIDS[normalized] || SIZE_GRIDS.roupas;
+  const defaultFields = SIZE_GRIDS[normalized] || SIZE_GRIDS.roupas;
+  const savedFields = normalizeSizes(product || {}).map((size) => size.label);
+  return [...defaultFields, ...savedFields].filter((label, index, list) => list.indexOf(label) === index);
 }
 
 function inferSizeType(product) {
@@ -181,8 +183,8 @@ function normalizeSizes(product) {
 
 function defaultStoreConfig() {
   return {
-    storeName: STORE_CONFIG.storeName || "Vitrine Prime",
-    logoImage: STORE_CONFIG.logoImage || "assets/brand/vitrine-prime-logo.png",
+    storeName: STORE_CONFIG.storeName || "Vitrine Moda",
+    logoImage: STORE_CONFIG.logoImage || "assets/brand/logo-vitrine-moda.svg",
     whatsappNumber: STORE_CONFIG.whatsappNumber || "",
     instagramUser: STORE_CONFIG.instagramUser || "",
     city: STORE_CONFIG.city || "",
@@ -209,7 +211,7 @@ function storeConfigFromForm() {
 
   return {
     storeName: String(data.get("storeName") || "").trim(),
-    logoInitials: "VP",
+    logoInitials: "VM",
     logoImage: String(data.get("logoImage") || "").trim(),
     whatsappNumber: String(data.get("whatsappNumber") || "").replace(/\D/g, ""),
     instagramUser,

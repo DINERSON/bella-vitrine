@@ -4,12 +4,12 @@
 // texto de entrega, formas de pagamento e mensagens do WhatsApp.
 // ============================================================
 const STORE_CONFIG = {
-  storeName: "Vitrine Prime",
-  logoInitials: "VP",
-  logoImage: "assets/brand/vitrine-prime-logo.png",
+  storeName: "Vitrine Moda",
+  logoInitials: "VM",
+  logoImage: "assets/brand/logo-vitrine-moda.svg",
   whatsappNumber: "5569999999999",
-  instagramUser: "primevitrine",
-  instagramUrl: "https://www.instagram.com/primevitrine/",
+  instagramUser: "vitrinemoda",
+  instagramUrl: "https://www.instagram.com/vitrinemoda/",
   city: "Pimenta Bueno - RO",
   deliveryText: "Entrega em Pimenta Bueno e região",
   paymentMethods: "Pix, dinheiro e cartão",
@@ -19,7 +19,7 @@ const STORE_CONFIG = {
 
 const SITE_CONTENT = {
   metaDescription:
-    "Vitrine Prime é uma loja catálogo de moda masculina, feminina e verão, com venda direta pelo WhatsApp.",
+    "Vitrine Moda é uma loja catálogo de moda masculina, feminina e verão, com venda direta pelo WhatsApp.",
   nav: [
     "Início",
     "Mais Vendidos",
@@ -41,12 +41,12 @@ const SITE_CONTENT = {
     wantLook: "Quero esse look",
   },
   hero: {
-    eyebrow: "VITRINE ONLINE",
-    title: "Vitrine Prime",
+    eyebrow: "MODA PREMIUM ONLINE",
+    title: "Vitrine Moda",
     subtitle:
-      "Moda masculina, feminina e verão em uma vitrine simples, moderna e direta pelo WhatsApp.",
-    image: "fotos/banner-prime-vitrine.jpg",
-    imageAlt: "Vitrine Prime moda online",
+      "Moda masculina, feminina e verão em uma vitrine elegante, moderna e direta pelo WhatsApp.",
+    image: "",
+    imageAlt: "Vitrine Moda moda online",
   },
   sections: {
     categoriesEyebrow: "Escolha por identidade",
@@ -73,7 +73,7 @@ const SITE_CONTENT = {
     contactCardTitle: "Informações da loja",
   },
   footer: {
-    text: "Vitrine Prime: moda masculina, feminina e verão com compra rápida pelo WhatsApp.",
+    text: "Vitrine Moda: moda masculina, feminina e verão com compra rápida pelo WhatsApp.",
     rights: "Todos os direitos reservados.",
   },
   lookMessage: "Olá, gostei do {look}. Pode me mandar mais informações?",

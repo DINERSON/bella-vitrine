@@ -1,6 +1,6 @@
-# Vitrine Prime
+# Vitrine Moda
 
-Site catalogo da Vitrine Prime com venda pelo WhatsApp e painel administrativo em `/admin`.
+Site catalogo da Vitrine Moda com venda pelo WhatsApp e painel administrativo em `/admin`.
 
 ## O que existe no projeto
 
@@ -112,7 +112,7 @@ sizesStock: {
   M: 0,
   G: 4,
   GG: 0,
-  XG: 1,
+  XL: 1,
   Unico: 0,
 }
 ```
@@ -153,7 +153,7 @@ O numero do WhatsApp vem das configuracoes da loja salvas no admin.
 Mensagem geral:
 
 ```text
-Ola, vim pelo catalogo da Vitrine Prime e gostaria de atendimento.
+Ola, vim pelo catalogo da Vitrine Moda e gostaria de atendimento.
 ```
 
 Mensagem de produto:
@@ -165,7 +165,7 @@ Ola, tenho interesse no produto [CODIGO] - [NOME]. Esta disponivel?
 Mensagem com tamanho:
 
 ```text
-Ola, tenho interesse no produto [CODIGO] - [NOME], tamanho [TAMANHO]. Esta disponivel?
+Ola, tenho interesse no produto [CODIGO] - [NOME], tamanho/numero [TAMANHO]. Esta disponivel?
 ```
 
 ## Como publicar no Netlify
@@ -178,12 +178,12 @@ Publicacao manual:
 4. Arraste a pasta inteira do projeto.
 5. Depois do deploy, va em `Site configuration`.
 6. Clique em `Change site name`.
-7. Escolha um nome como `vitrine-prime`.
+7. Escolha um nome como `vitrine-moda`.
 
 O link ficara parecido com:
 
 ```text
-https://vitrine-prime.netlify.app
+https://vitrine-moda.netlify.app
 ```
 
 Publicacao pelo GitHub:
