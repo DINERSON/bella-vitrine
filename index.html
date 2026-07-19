@@ -12,10 +12,13 @@
     <header class="site-header" id="inicio">
       <nav class="nav container" aria-label="Menu principal">
         <a class="brand" href="#inicio" id="header-brand">
-          <span class="brand-mark" id="brand-mark">
-            <img class="brand-logo" data-brand-logo src="assets/brand/logo-vitrine-moda.svg" alt="Logo Vitrine Moda" />
+          <span class="brand-mark" id="brand-mark" aria-hidden="true">
+            VM
           </span>
-          <span class="brand-name" data-store-name>Vitrine Moda</span>
+          <span class="brand-copy">
+            <span class="brand-name" data-store-name>Vitrine Moda</span>
+            <span class="brand-slogan" data-store-slogan>Moda que realça você</span>
+          </span>
         </a>
 
         <button class="menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="main-menu">
@@ -38,9 +41,9 @@
           <div class="hero-media" aria-label="Vitrine principal Vitrine Moda">
             <img id="hero-image" src="" alt="" />
             <div class="hero-overlay">
-              <img class="hero-brand-logo" data-brand-logo src="assets/brand/logo-vitrine-moda.svg" alt="Logo Vitrine Moda" />
               <p class="eyebrow" id="hero-eyebrow"></p>
               <h1 id="hero-title"></h1>
+              <p class="hero-slogan" id="hero-slogan"></p>
               <p id="hero-subtitle"></p>
               <div class="hero-actions">
                 <a class="btn btn-primary" href="#catalogo" id="hero-catalog-button"></a>
@@ -141,10 +144,13 @@
       <div class="container footer-grid">
         <div>
           <a class="brand footer-brand" href="#inicio">
-            <span class="brand-mark">
-              <img class="brand-logo" data-brand-logo src="assets/brand/logo-vitrine-moda.svg" alt="Logo Vitrine Moda" />
+            <span class="brand-mark" aria-hidden="true">
+              VM
             </span>
-            <span class="brand-name" data-store-name>Vitrine Moda</span>
+            <span class="brand-copy">
+              <span class="brand-name" data-store-name>Vitrine Moda</span>
+              <span class="brand-slogan" data-store-slogan>Moda que realça você</span>
+            </span>
           </a>
           <p id="footer-text"></p>
         </div>

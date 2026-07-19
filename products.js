@@ -7,6 +7,7 @@ const STORE_CONFIG = {
   storeName: "Vitrine Moda",
   logoInitials: "VM",
   logoImage: "assets/brand/logo-vitrine-moda.svg",
+  slogan: "Moda que realça você",
   whatsappNumber: "5569999999999",
   instagramUser: "vitrinemoda",
   instagramUrl: "https://www.instagram.com/vitrinemoda/",
@@ -43,8 +44,9 @@ const SITE_CONTENT = {
   hero: {
     eyebrow: "MODA PREMIUM ONLINE",
     title: "Vitrine Moda",
+    slogan: "Moda que realça você",
     subtitle:
-      "Moda masculina, feminina e verão em uma vitrine elegante, moderna e direta pelo WhatsApp.",
+      "Moda feminina, masculina e verão em uma vitrine simples, moderna e direta pelo WhatsApp.",
     image: "",
     imageAlt: "Vitrine Moda moda online",
   },
@@ -73,7 +75,7 @@ const SITE_CONTENT = {
     contactCardTitle: "Informações da loja",
   },
   footer: {
-    text: "Vitrine Moda: moda masculina, feminina e verão com compra rápida pelo WhatsApp.",
+    text: "Vitrine Moda: moda feminina, masculina e verão com compra rápida pelo WhatsApp.",
     rights: "Todos os direitos reservados.",
   },
   lookMessage: "Olá, gostei do {look}. Pode me mandar mais informações?",

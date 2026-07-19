@@ -185,6 +185,16 @@ function getTheme(productOrCategory) {
   return "neutro";
 }
 
+function cleanBrandText(value) {
+  const text = String(value || "").trim();
+  return /^(vitrine prime|prime vitrine)$/i.test(text) ? "Vitrine Moda" : text;
+}
+
+function cleanLogoInitials(value) {
+  const text = String(value || "").trim().toUpperCase();
+  return text === "PV" || text === "VP" ? "VM" : text;
+}
+
 function matchesFilter(product, filter) {
   if (filter === "Todos") return true;
   if (filter === "Mais Vendidos") return Boolean(product.maisVendido || product.destaque);
@@ -389,10 +399,11 @@ function setActiveFilter(filter) {
 function renderMenu() {
   const drawerHeader = `
     <div class="drawer-header">
-      <span class="brand-mark drawer-brand-mark">
-        <img class="brand-logo" data-brand-logo src="${escapeHtml(STORE_CONFIG.logoImage || "assets/brand/logo-vitrine-moda.svg")}" alt="Logo ${escapeHtml(STORE_CONFIG.storeName)}" />
-      </span>
-      <strong>${escapeHtml(STORE_CONFIG.storeName)}</strong>
+      <span class="brand-mark drawer-brand-mark" aria-hidden="true">${escapeHtml(STORE_CONFIG.logoInitials || "VM")}</span>
+      <div class="drawer-brand-copy">
+        <strong>${escapeHtml(STORE_CONFIG.storeName)}</strong>
+        <span>${escapeHtml(STORE_CONFIG.slogan || "Moda que realça você")}</span>
+      </div>
       <button class="drawer-close" type="button" data-menu-close aria-label="Fechar menu">×</button>
     </div>
   `;
@@ -500,9 +511,10 @@ function applyRemoteStoreConfig(remoteConfig) {
   if (!remoteConfig) return;
 
   const nextStoreConfig = {
-    storeName: remoteConfig.storeName,
-    logoInitials: remoteConfig.logoInitials,
+    storeName: cleanBrandText(remoteConfig.storeName),
+    logoInitials: cleanLogoInitials(remoteConfig.logoInitials),
     logoImage: remoteConfig.logoImage,
+    slogan: remoteConfig.slogan,
     whatsappNumber: remoteConfig.whatsappNumber,
     instagramUser: remoteConfig.instagramUser,
     instagramUrl: remoteConfig.instagramUrl,
@@ -516,9 +528,10 @@ function applyRemoteStoreConfig(remoteConfig) {
     if (value) STORE_CONFIG[key] = value;
   });
 
-  if (remoteConfig.heroTitle) SITE_CONTENT.hero.title = remoteConfig.heroTitle;
+  if (remoteConfig.heroTitle) SITE_CONTENT.hero.title = cleanBrandText(remoteConfig.heroTitle);
+  if (remoteConfig.slogan) SITE_CONTENT.hero.slogan = remoteConfig.slogan;
   if (remoteConfig.heroSubtitle) SITE_CONTENT.hero.subtitle = remoteConfig.heroSubtitle;
-  SITE_CONTENT.footer.text = `${STORE_CONFIG.storeName}: moda masculina, feminina e verao com compra rapida pelo WhatsApp.`;
+  SITE_CONTENT.footer.text = `${STORE_CONFIG.storeName}: moda feminina, masculina e verao com compra rapida pelo WhatsApp.`;
 }
 
 function applyStoreConfig() {
@@ -533,14 +546,13 @@ function applyStoreConfig() {
   document.querySelectorAll("[data-store-name]").forEach((element) => {
     element.textContent = STORE_CONFIG.storeName;
   });
+  document.querySelectorAll("[data-store-slogan]").forEach((element) => {
+    element.textContent = STORE_CONFIG.slogan || SITE_CONTENT.hero.slogan || "Moda que realça você";
+  });
   document.querySelectorAll(".brand-mark").forEach((element) => {
     if (!element.querySelector("img")) {
       element.textContent = STORE_CONFIG.logoInitials || "VM";
     }
-  });
-  document.querySelectorAll("[data-brand-logo]").forEach((image) => {
-    image.src = STORE_CONFIG.logoImage || "assets/brand/logo-vitrine-moda.svg";
-    image.alt = `Logo ${STORE_CONFIG.storeName}`;
   });
   document.querySelectorAll("[data-whatsapp-general]").forEach((link) => {
     link.href = whatsappUrl(generalMessage);
@@ -549,6 +561,7 @@ function applyStoreConfig() {
 
   setText("#hero-eyebrow", SITE_CONTENT.hero.eyebrow);
   setText("#hero-title", SITE_CONTENT.hero.title);
+  setText("#hero-slogan", SITE_CONTENT.hero.slogan || STORE_CONFIG.slogan);
   setText("#hero-subtitle", SITE_CONTENT.hero.subtitle);
   setText("#hero-catalog-button", SITE_CONTENT.buttons.viewCatalog);
 

@@ -1,24 +1,27 @@
 :root {
-  --bg: #070b13;
-  --surface: #0f172a;
-  --surface-soft: #0b1120;
+  --bg: #070a12;
+  --bg-soft: #0d1320;
+  --surface: #0d1320;
+  --surface-soft: #0a0f1a;
   --card: #111827;
-  --card-strong: #172033;
-  --primary: #2563eb;
-  --primary-dark: #1d4ed8;
+  --card-strong: #151f31;
+  --primary: #d6b15e;
+  --primary-dark: #a98235;
   --text: #ffffff;
-  --muted: #cbd5e1;
-  --line: #1e293b;
+  --muted: #b8c0cc;
+  --line: #283447;
   --whatsapp: #25d366;
   --whatsapp-dark: #18a94d;
   --danger: #7f8794;
-  --blue-neon: #38bdf8;
-  --pink: #ec4899;
-  --pink-light: #f9a8d4;
-  --summer-water: #06b6d4;
-  --summer-sand: #facc15;
-  --summer-coral: #fb7185;
-  --gold: #c9a227;
+  --blue: #123b66;
+  --blue-neon: #d6b15e;
+  --pink: #d6b15e;
+  --pink-light: #f1d38a;
+  --summer-water: #123b66;
+  --summer-sand: #d6b15e;
+  --summer-coral: #f1d38a;
+  --gold: #d6b15e;
+  --gold-soft: #f1d38a;
   --shadow: 0 22px 56px rgba(0, 0, 0, 0.36);
   --radius: 8px;
   --container: 1180px;
@@ -37,9 +40,9 @@ body {
   margin: 0;
   overflow-x: hidden;
   background:
-    radial-gradient(circle at top left, rgba(37, 99, 235, 0.18), transparent 32rem),
-    radial-gradient(circle at top right, rgba(236, 72, 153, 0.12), transparent 28rem),
-    linear-gradient(180deg, #070b13 0%, #0f172a 48%, #070b13 100%);
+    radial-gradient(circle at top left, rgba(18, 59, 102, 0.24), transparent 32rem),
+    radial-gradient(circle at top right, rgba(214, 177, 94, 0.14), transparent 28rem),
+    linear-gradient(180deg, #070a12 0%, #0d1320 48%, #070a12 100%);
   color: var(--text);
   font-family: "Segoe UI", Arial, sans-serif;
   line-height: 1.6;
@@ -102,7 +105,7 @@ body.menu-open .site-header {
   right: 0;
   bottom: -1px;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(37, 99, 235, 0.72), rgba(230, 193, 90, 0.62), transparent);
+  background: linear-gradient(90deg, transparent, rgba(18, 59, 102, 0.72), rgba(241, 211, 138, 0.62), transparent);
   pointer-events: none;
 }
 
@@ -118,7 +121,7 @@ body.menu-open .site-header {
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 14px;
+  gap: 10px;
   color: var(--text);
   font-weight: 900;
   letter-spacing: 0.05em;
@@ -126,31 +129,49 @@ body.menu-open .site-header {
 }
 
 .brand-name {
-  text-shadow: 0 0 22px rgba(56, 189, 248, 0.16);
+  display: block;
+  color: var(--gold-soft);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1rem;
+  letter-spacing: 0.16em;
+  line-height: 1;
+  text-shadow: 0 0 22px rgba(214, 177, 94, 0.22);
+}
+
+.brand-copy {
+  display: grid;
+  gap: 4px;
+}
+
+.brand-slogan {
+  display: block;
+  color: var(--muted);
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: none;
 }
 
 .brand-mark {
-  flex: 0 0 58px;
-  width: 58px;
-  height: 58px;
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
   display: grid;
   place-items: center;
   overflow: hidden;
-  border: 1px solid rgba(230, 193, 90, 0.42);
-  border-radius: 14px;
-  background: #020712;
+  border: 1px solid rgba(241, 211, 138, 0.48);
+  border-radius: 999px;
+  background: rgba(7, 10, 18, 0.62);
+  color: var(--gold-soft);
   box-shadow:
     inset 0 0 0 1px rgba(255, 255, 255, 0.04),
-    0 0 28px rgba(37, 99, 235, 0.22),
+    0 0 22px rgba(214, 177, 94, 0.16),
     0 12px 28px rgba(0, 0, 0, 0.28);
-  font-size: 0.95rem;
-}
-
-.brand-logo {
-  width: 100%;
-  height: 100%;
-  padding: 4px;
-  object-fit: contain;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
 }
 
 .nav-links {
@@ -174,9 +195,9 @@ body.menu-open .site-header {
 }
 
 .nav-links a:hover {
-  background: rgba(37, 99, 235, 0.16);
+  background: rgba(214, 177, 94, 0.12);
   color: #fff;
-  box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.22);
+  box-shadow: inset 0 0 0 1px rgba(241, 211, 138, 0.22);
 }
 
 .drawer-header {
@@ -273,8 +294,8 @@ body.menu-open .site-header {
   align-items: center;
   padding: 52px 0 64px;
   background:
-    radial-gradient(circle at 50% 86%, rgba(37, 99, 235, 0.28), transparent 24rem),
-    radial-gradient(circle at 82% 34%, rgba(236, 72, 153, 0.13), transparent 24rem),
+    radial-gradient(circle at 50% 86%, rgba(18, 59, 102, 0.28), transparent 24rem),
+    radial-gradient(circle at 82% 34%, rgba(214, 177, 94, 0.14), transparent 24rem),
     linear-gradient(135deg, #05070b 0%, #081426 48%, #05070b 100%);
 }
 
@@ -290,9 +311,9 @@ body.menu-open .site-header {
   border-radius: 28px 28px 8px 8px;
   overflow: hidden;
   background:
-    radial-gradient(circle at 20% 38%, rgba(37, 99, 235, 0.36), transparent 16rem),
-    radial-gradient(circle at 78% 26%, rgba(236, 72, 153, 0.26), transparent 13rem),
-    radial-gradient(circle at 84% 74%, rgba(34, 211, 238, 0.22), transparent 13rem),
+    radial-gradient(circle at 20% 38%, rgba(18, 59, 102, 0.38), transparent 16rem),
+    radial-gradient(circle at 78% 26%, rgba(214, 177, 94, 0.22), transparent 13rem),
+    radial-gradient(circle at 84% 74%, rgba(241, 211, 138, 0.12), transparent 13rem),
     linear-gradient(135deg, #05070b, #081426 48%, #05070b);
   box-shadow: 0 34px 84px rgba(0, 0, 0, 0.52);
   isolation: isolate;
@@ -338,10 +359,10 @@ body.menu-open .site-header {
 .hero-no-image::before {
   z-index: 1;
   background:
-    linear-gradient(115deg, transparent 0 12%, rgba(37, 99, 235, 0.24) 12% 13%, transparent 13% 44%, rgba(201, 162, 39, 0.2) 44% 45%, transparent 45%),
-    radial-gradient(ellipse at 18% 58%, rgba(37, 99, 235, 0.32), transparent 18rem),
-    radial-gradient(ellipse at 78% 28%, rgba(236, 72, 153, 0.28), transparent 13rem),
-    radial-gradient(ellipse at 84% 72%, rgba(34, 211, 238, 0.24), transparent 14rem),
+    linear-gradient(115deg, transparent 0 12%, rgba(18, 59, 102, 0.28) 12% 13%, transparent 13% 44%, rgba(214, 177, 94, 0.22) 44% 45%, transparent 45%),
+    radial-gradient(ellipse at 18% 58%, rgba(18, 59, 102, 0.36), transparent 18rem),
+    radial-gradient(ellipse at 78% 28%, rgba(214, 177, 94, 0.22), transparent 13rem),
+    radial-gradient(ellipse at 84% 72%, rgba(241, 211, 138, 0.12), transparent 14rem),
     linear-gradient(135deg, #05070b, #081426 54%, #05070b);
 }
 
@@ -370,14 +391,6 @@ body.menu-open .site-header {
   padding: 22px;
 }
 
-.hero-brand-logo {
-  width: clamp(116px, 13vw, 168px);
-  height: clamp(116px, 13vw, 168px);
-  padding: 0;
-  object-fit: contain;
-  filter: drop-shadow(0 20px 42px rgba(0, 0, 0, 0.72)) drop-shadow(0 0 18px rgba(37, 99, 235, 0.34));
-}
-
 .hero-overlay .eyebrow {
   margin: 0;
   color: var(--blue-neon);
@@ -397,6 +410,16 @@ body.menu-open .site-header {
     0 2px 0 #6e5214,
     0 0 26px rgba(230, 193, 90, 0.42),
     0 24px 48px rgba(0, 0, 0, 0.62);
+}
+
+.hero-slogan {
+  margin: 0;
+  color: var(--gold-soft);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.15rem, 2.4vw, 1.85rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-shadow: 0 14px 34px rgba(0, 0, 0, 0.72);
 }
 
 .hero-overlay > p:not(.eyebrow) {
@@ -514,13 +537,13 @@ h2 {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--primary), var(--blue-neon));
-  color: #fff;
-  box-shadow: 0 16px 32px rgba(37, 99, 235, 0.28);
+  background: linear-gradient(135deg, var(--gold), var(--gold-soft));
+  color: #090d14;
+  box-shadow: 0 16px 32px rgba(214, 177, 94, 0.24);
 }
 
 .btn-primary:hover {
-  background: linear-gradient(135deg, #1d4ed8, #0ea5e9);
+  background: linear-gradient(135deg, #c49a43, var(--gold-soft));
 }
 
 .btn-whatsapp {
@@ -534,13 +557,13 @@ h2 {
 }
 
 .btn-outline {
-  border: 1px solid var(--primary);
+  border: 1px solid rgba(18, 59, 102, 0.94);
   background: transparent;
-  color: var(--primary);
+  color: var(--gold-soft);
 }
 
 .btn-outline:hover {
-  background: rgba(201, 162, 39, 0.12);
+  background: rgba(18, 59, 102, 0.32);
 }
 
 .btn-light {
@@ -1208,9 +1231,9 @@ h2 {
 
 .size-option:hover,
 .size-option.selected {
-  border-color: var(--blue-neon);
-  background: var(--blue-neon);
-  color: #fff;
+  border-color: var(--gold-soft);
+  background: linear-gradient(135deg, var(--gold), var(--gold-soft));
+  color: #090d14;
   transform: translateY(-1px);
 }
 
@@ -1261,7 +1284,7 @@ h2 {
 }
 
 .price-row strong {
-  color: var(--blue-neon);
+  color: var(--gold-soft);
   font-size: 1.38rem;
 }
 
@@ -1278,10 +1301,10 @@ h2 {
   min-height: 34px;
   width: 100%;
   margin-bottom: 8px;
-  border: 1px solid rgba(56, 189, 248, 0.28);
+  border: 1px solid rgba(18, 59, 102, 0.72);
   border-radius: 10px;
   background: rgba(15, 23, 42, 0.72);
-  color: #dbeafe;
+  color: var(--gold-soft);
   font-size: 0.78rem;
   font-weight: 900;
   cursor: pointer;
@@ -1752,14 +1775,13 @@ h2 {
   }
 
   .brand-mark {
-    flex-basis: 54px;
-    width: 54px;
-    height: 54px;
-    border-radius: 12px;
+    flex-basis: 34px;
+    width: 34px;
+    height: 34px;
   }
 
   .brand-name {
-    font-size: 0.88rem;
+    font-size: 0.86rem;
   }
 
   .menu-toggle {
@@ -1840,17 +1862,28 @@ h2 {
   }
 
   .drawer-brand-mark {
-    flex-basis: 46px;
-    width: 46px;
-    height: 46px;
-    border-radius: 12px;
+    flex-basis: 34px;
+    width: 34px;
+    height: 34px;
   }
 
   .drawer-header strong {
-    color: #fff;
+    color: var(--gold-soft);
     font-size: 0.92rem;
     letter-spacing: 0.06em;
     text-transform: uppercase;
+  }
+
+  .drawer-brand-copy {
+    display: grid;
+    gap: 4px;
+  }
+
+  .drawer-brand-copy span {
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 800;
+    line-height: 1;
   }
 
   .drawer-close {
@@ -1898,14 +1931,14 @@ h2 {
 
   .nav-links a::after {
     content: "›";
-    color: rgba(230, 193, 90, 0.82);
+    color: rgba(241, 211, 138, 0.82);
     font-size: 1.25rem;
     line-height: 1;
   }
 
   .nav-links a:hover,
   .nav-links a:focus-visible {
-    background: rgba(37, 99, 235, 0.18);
+    background: rgba(214, 177, 94, 0.12);
     color: #fff;
     box-shadow: none;
   }
@@ -2098,16 +2131,20 @@ h2 {
   }
 
   .brand-mark {
-    flex-basis: 46px;
-    width: 46px;
-    height: 46px;
+    flex-basis: 32px;
+    width: 32px;
+    height: 32px;
   }
 
   .brand-name {
-    max-width: 118px;
-    font-size: 0.74rem;
+    max-width: 132px;
+    font-size: 0.72rem;
     line-height: 1.15;
     text-align: right;
+  }
+
+  .brand-slogan {
+    display: none;
   }
 
   .nav-links {

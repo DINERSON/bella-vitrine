@@ -185,6 +185,7 @@ function defaultStoreConfig() {
   return {
     storeName: STORE_CONFIG.storeName || "Vitrine Moda",
     logoImage: STORE_CONFIG.logoImage || "assets/brand/logo-vitrine-moda.svg",
+    slogan: STORE_CONFIG.slogan || "Moda que realça você",
     whatsappNumber: STORE_CONFIG.whatsappNumber || "",
     instagramUser: STORE_CONFIG.instagramUser || "",
     city: STORE_CONFIG.city || "",
@@ -196,8 +197,16 @@ function defaultStoreConfig() {
   };
 }
 
+function cleanBrandText(value) {
+  const text = String(value || "").trim();
+  return /^(vitrine prime|prime vitrine)$/i.test(text) ? "Vitrine Moda" : text;
+}
+
 function fillStoreConfigForm(config = {}) {
   const merged = { ...defaultStoreConfig(), ...config };
+  merged.storeName = cleanBrandText(merged.storeName);
+  merged.heroTitle = cleanBrandText(merged.heroTitle);
+  merged.slogan = merged.slogan || "Moda que realça você";
   Object.entries(merged).forEach(([field, value]) => {
     if (storeConfigForm.elements[field]) {
       storeConfigForm.elements[field].value = value || "";
@@ -213,6 +222,7 @@ function storeConfigFromForm() {
     storeName: String(data.get("storeName") || "").trim(),
     logoInitials: "VM",
     logoImage: String(data.get("logoImage") || "").trim(),
+    slogan: String(data.get("slogan") || "").trim(),
     whatsappNumber: String(data.get("whatsappNumber") || "").replace(/\D/g, ""),
     instagramUser,
     instagramUrl: instagramUser ? `https://www.instagram.com/${instagramUser}/` : "",
