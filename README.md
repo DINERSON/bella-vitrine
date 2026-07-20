@@ -47,7 +47,13 @@ dinerson.github.io
 Quando usar dominio proprio, adicione tambem:
 
 ```text
-vitrinemoda.com.br
+vitrinemoda.net.br
+```
+
+Se tambem usar `www`, adicione:
+
+```text
+www.vitrinemoda.net.br
 ```
 
 ## Regras de seguranca
@@ -193,6 +199,8 @@ Links esperados:
 ```text
 Site:  https://dinerson.github.io/bella-vitrine/
 Admin: https://dinerson.github.io/bella-vitrine/admin/
+Final: https://vitrinemoda.net.br
+Admin final: https://vitrinemoda.net.br/admin/
 ```
 
 Depois de publicar, confira no Firebase Console:
@@ -201,19 +209,27 @@ Depois de publicar, confira no Firebase Console:
 2. Clique em `Configuracoes`.
 3. Entre em `Dominios autorizados`.
 4. Confirme que `dinerson.github.io` esta cadastrado.
+5. Confirme tambem que `vitrinemoda.net.br` esta cadastrado.
+6. Se usar `www`, cadastre `www.vitrinemoda.net.br`.
 
 Sem esse dominio autorizado, o login do `/admin/` pode ser bloqueado pelo Firebase Auth.
 
 ## Dominio proprio futuramente
 
-Quando comprar um dominio, por exemplo `vitrinemoda.com.br`:
+Quando configurar o dominio oficial `vitrinemoda.net.br`:
 
 1. No GitHub, acesse `Settings > Pages`.
-2. Em `Custom domain`, digite `vitrinemoda.com.br`.
+2. Em `Custom domain`, digite `vitrinemoda.net.br`.
 3. Salve e siga as instrucoes de DNS mostradas pelo GitHub Pages no provedor do dominio.
 4. Aguarde a propagacao do DNS.
 5. No Firebase Console, abra `Authentication > Configuracoes > Dominios autorizados`.
-6. Adicione `vitrinemoda.com.br`.
+6. Adicione `vitrinemoda.net.br`.
+7. Se usar `www`, adicione tambem `www.vitrinemoda.net.br`.
+
+No painel onde o dominio foi comprado, aponte o DNS para o GitHub Pages:
+
+- dominio principal `vitrinemoda.net.br` apontando para GitHub Pages;
+- opcionalmente `www.vitrinemoda.net.br` apontando ou redirecionando para `vitrinemoda.net.br`.
 
 Depois disso, o site publico e o painel admin continuam os mesmos, apenas usando o dominio proprio.
 
