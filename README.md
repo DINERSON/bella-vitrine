@@ -38,6 +38,17 @@ window.FIREBASE_CONFIG = {
 8. Publique o conteudo de `firestore.rules`.
 9. Ative o Firebase Storage.
 10. Publique o conteudo de `storage.rules`.
+11. Em Authentication > Configuracoes > Dominios autorizados, adicione:
+
+```text
+dinerson.github.io
+```
+
+Quando usar dominio proprio, adicione tambem:
+
+```text
+vitrinemoda.com.br
+```
 
 ## Regras de seguranca
 
@@ -56,7 +67,7 @@ Storage:
 Depois de publicar o site:
 
 ```text
-https://SEU-SITE.netlify.app/admin
+https://dinerson.github.io/bella-vitrine/admin/
 ```
 
 Entre com o e-mail e senha criados no Firebase Auth.
@@ -164,33 +175,47 @@ Mensagem com tamanho:
 Ola, tenho interesse no produto [CODIGO] - [NOME], tamanho/numero [TAMANHO]. Esta disponivel?
 ```
 
-## Como publicar no Netlify
+## Como publicar no GitHub Pages
 
-Publicacao manual:
+Este projeto e estatico e nao precisa de comando de build. O GitHub Pages deve publicar a raiz do repositorio.
 
-1. Acesse o Netlify.
-2. Clique em `Add new site`.
-3. Clique em `Deploy manually`.
-4. Arraste a pasta inteira do projeto.
-5. Depois do deploy, va em `Site configuration`.
-6. Clique em `Change site name`.
-7. Escolha um nome como `vitrine-moda`.
+1. Acesse o repositorio `DINERSON/bella-vitrine` no GitHub.
+2. Clique em `Settings`.
+3. No menu lateral, clique em `Pages`.
+4. Em `Build and deployment`, selecione `Deploy from a branch`.
+5. Em `Branch`, escolha `main`.
+6. Em `Folder`, escolha `/root`.
+7. Clique em `Save`.
+8. Aguarde o GitHub gerar o link.
 
-O link ficara parecido com:
+Links esperados:
 
 ```text
-https://vitrine-moda.netlify.app
+Site:  https://dinerson.github.io/bella-vitrine/
+Admin: https://dinerson.github.io/bella-vitrine/admin/
 ```
 
-Publicacao pelo GitHub:
+Depois de publicar, confira no Firebase Console:
 
-1. Envie este projeto para o GitHub.
-2. No Netlify, clique em `Add new site`.
-3. Clique em `Import an existing project`.
-4. Selecione o repositorio.
-5. Build command: deixe vazio.
-6. Publish directory: use a raiz do projeto.
-7. Publique.
+1. Abra Authentication.
+2. Clique em `Configuracoes`.
+3. Entre em `Dominios autorizados`.
+4. Confirme que `dinerson.github.io` esta cadastrado.
+
+Sem esse dominio autorizado, o login do `/admin/` pode ser bloqueado pelo Firebase Auth.
+
+## Dominio proprio futuramente
+
+Quando comprar um dominio, por exemplo `vitrinemoda.com.br`:
+
+1. No GitHub, acesse `Settings > Pages`.
+2. Em `Custom domain`, digite `vitrinemoda.com.br`.
+3. Salve e siga as instrucoes de DNS mostradas pelo GitHub Pages no provedor do dominio.
+4. Aguarde a propagacao do DNS.
+5. No Firebase Console, abra `Authentication > Configuracoes > Dominios autorizados`.
+6. Adicione `vitrinemoda.com.br`.
+
+Depois disso, o site publico e o painel admin continuam os mesmos, apenas usando o dominio proprio.
 
 ## Fallback
 
