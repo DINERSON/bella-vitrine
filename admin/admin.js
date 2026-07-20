@@ -543,7 +543,6 @@ function resetForm() {
   clearStockFields();
   clearImageFields();
   productForm.elements.firestoreId.value = "";
-  productForm.elements.imagem.value = "";
   formTitle.textContent = "Cadastrar produto";
   setMessage(formMessage, "");
   renderImagePreview();
@@ -575,7 +574,6 @@ function handleRemoveIdentityImage(event) {
 
 function fillForm(product) {
   productForm.elements.firestoreId.value = product.firestoreId || product.id;
-  productForm.elements.imagem.value = product.imagem || "";
   fillImageFields(product);
   productForm.elements.codigo.value = product.codigo || "";
   productForm.elements.nome.value = product.nome || "";
