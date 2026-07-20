@@ -180,13 +180,14 @@
                 <option value="false">Inativo</option>
               </select>
             </label>
+            <p class="admin-muted full-field">
+              Envie a imagem da identidade direto do celular ou computador.
+            </p>
+            <input type="hidden" name="image" />
+            <input type="hidden" name="removeIdentityImage" />
             <label>
-              Imagem upload
+              Imagem da identidade
               <input name="identityImageFile" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" />
-            </label>
-            <label class="full-field">
-              Imagem URL
-              <input name="image" placeholder="fotos/look-casual-urbano.jpg" />
             </label>
             <div class="image-preview-grid identity-preview full-field" id="identity-image-preview" aria-label="Previa da imagem da identidade"></div>
             <button class="btn btn-primary full-field" type="submit" id="save-identity">Salvar identidade</button>
@@ -323,39 +324,31 @@
               </select>
             </label>
             <p class="admin-muted full-field">
-              Envie fotos direto do celular ou cole uma URL. Se usar os dois no mesmo campo, o upload tem prioridade.
+              Envie ate 4 fotos do produto direto do celular ou computador. A primeira foto sera usada como imagem principal.
             </p>
+            <input type="hidden" name="imagemPrincipal" />
+            <input type="hidden" name="imagem2" />
+            <input type="hidden" name="imagem3" />
+            <input type="hidden" name="imagem4" />
+            <input type="hidden" name="removeFoto1" />
+            <input type="hidden" name="removeFoto2" />
+            <input type="hidden" name="removeFoto3" />
+            <input type="hidden" name="removeFoto4" />
             <label>
-              Foto principal upload
+              Foto principal
               <input name="foto1" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" />
             </label>
             <label>
-              Foto principal URL
-              <input name="imagemPrincipal" placeholder="fotos/camiseta-frente.jpg" />
-            </label>
-            <label>
-              Foto 2 upload
+              Foto 2
               <input name="foto2" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" />
             </label>
             <label>
-              Foto 2 URL
-              <input name="imagem2" placeholder="fotos/camiseta-costas.jpg" />
-            </label>
-            <label>
-              Foto 3 upload
+              Foto 3
               <input name="foto3" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" />
             </label>
             <label>
-              Foto 3 URL
-              <input name="imagem3" placeholder="fotos/camiseta-detalhe.jpg" />
-            </label>
-            <label>
-              Foto 4 upload
+              Foto 4
               <input name="foto4" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" />
-            </label>
-            <label>
-              Foto 4 URL
-              <input name="imagem4" placeholder="fotos/camiseta-look.jpg" />
             </label>
             <div class="image-preview-grid full-field" id="image-preview-grid" aria-label="Previa das fotos do produto"></div>
             <label class="full-field">

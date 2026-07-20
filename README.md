@@ -121,17 +121,13 @@ Se todos os tamanhos estiverem com estoque `0`, o produto aparece como esgotado 
 
 ## Como cadastrar fotos
 
-Existem duas formas:
+No cadastro de produto, as fotos sao enviadas direto pelo painel admin.
 
-1. Upload pelo celular:
-   selecione `Foto principal upload`, `Foto 2 upload`, `Foto 3 upload` e `Foto 4 upload`.
-   As imagens vao para o Firebase Storage na pasta `products/`.
-   Sao aceitos arquivos `jpg`, `jpeg`, `png` e `webp`.
+Selecione `Foto principal`, `Foto 2`, `Foto 3` e `Foto 4`.
+As imagens vao para o Firebase Storage na pasta `products/`.
+Sao aceitos arquivos `jpg`, `jpeg`, `png` e `webp`.
 
-2. URL manual:
-   cole URLs nos campos `Foto principal URL`, `Foto 2 URL`, `Foto 3 URL` e `Foto 4 URL`.
-
-Se usar upload e URL no mesmo campo, o upload tem prioridade.
+Ao editar um produto, as fotos atuais aparecem no preview. Voce pode trocar uma foto escolhendo outro arquivo ou remover a foto pelo botao `Remover foto`.
 
 Os arquivos enviados pelo painel seguem este formato:
 

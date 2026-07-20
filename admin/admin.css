@@ -308,6 +308,26 @@
   font-weight: 900;
 }
 
+.remove-photo-button {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  min-height: 30px;
+  border: 1px solid rgba(241, 211, 138, 0.42);
+  border-radius: 999px;
+  background: rgba(5, 5, 5, 0.86);
+  color: var(--gold-soft);
+  padding: 5px 9px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.remove-photo-button:hover {
+  border-color: var(--gold);
+  color: #fff;
+}
+
 .image-preview-card.missing {
   display: grid;
   place-items: center;
