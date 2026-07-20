@@ -187,7 +187,9 @@ function getTheme(productOrCategory) {
 
 function cleanBrandText(value) {
   const text = String(value || "").trim();
-  return /^(vitrine prime|prime vitrine)$/i.test(text) ? "Vitrine Moda" : text;
+  const oldA = ["vitrine", "prime"].join(" ");
+  const oldB = ["prime", "vitrine"].join(" ");
+  return new RegExp(`^(${oldA}|${oldB})$`, "i").test(text) ? "Vitrine Moda" : text;
 }
 
 function cleanLogoInitials(value) {
