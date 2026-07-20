@@ -59,6 +59,10 @@ function productsCollection() {
   return firebaseModules.collection(db, "products");
 }
 
+function identitiesCollection() {
+  return firebaseModules.collection(db, "storeIdentities");
+}
+
 function normalizeKey(value) {
   return String(value || "")
     .normalize("NFD")
@@ -120,6 +124,21 @@ function normalizeProduct(docSnapshot) {
   };
 }
 
+function normalizeIdentity(docSnapshot) {
+  const data = docSnapshot.data();
+  return {
+    id: docSnapshot.id,
+    firestoreId: docSnapshot.id,
+    title: data.title || "",
+    description: data.description || "",
+    buttonText: data.buttonText || "Quero esse look",
+    targetCategory: data.targetCategory || "",
+    image: data.image || "",
+    active: data.active !== false,
+    order: Number.isFinite(Number(data.order)) ? Number(data.order) : 0,
+  };
+}
+
 async function fetchProducts() {
   if (!configured) return [];
   await ensureFirebase();
@@ -127,6 +146,15 @@ async function fetchProducts() {
     firebaseModules.query(productsCollection(), firebaseModules.orderBy("createdAt", "desc"))
   );
   return snapshot.docs.map(normalizeProduct);
+}
+
+async function fetchStoreIdentities() {
+  if (!configured) return [];
+  await ensureFirebase();
+  const snapshot = await firebaseModules.getDocs(
+    firebaseModules.query(identitiesCollection(), firebaseModules.orderBy("order", "asc"))
+  );
+  return snapshot.docs.map(normalizeIdentity);
 }
 
 function sizesStockFromProduct(product) {
@@ -198,6 +226,34 @@ async function uploadProductImages(imageFiles, productCode) {
   return uploads;
 }
 
+async function uploadIdentityImage(imageFile, identityTitle) {
+  const file = imageFile?.file || imageFile;
+  if (!file) return "";
+
+  const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+  if (file.type && !allowedTypes.includes(file.type)) {
+    const error = new Error("UPLOAD_ERROR");
+    error.uploadError = true;
+    throw error;
+  }
+
+  const timestamp = Date.now();
+  const safeTitle = safeFileNamePart(identityTitle, "identidade");
+  const imageRef = firebaseModules.ref(storage, `identities/${timestamp}-${safeTitle}.jpg`);
+
+  try {
+    await firebaseModules.uploadBytes(imageRef, file, {
+      contentType: file.type || "image/jpeg",
+    });
+    return firebaseModules.getDownloadURL(imageRef);
+  } catch (error) {
+    const uploadError = new Error("UPLOAD_ERROR");
+    uploadError.uploadError = true;
+    uploadError.cause = error;
+    throw uploadError;
+  }
+}
+
 async function fetchStoreConfig() {
   if (!configured) return null;
   await ensureFirebase();
@@ -263,6 +319,44 @@ async function saveProduct(product, imageFiles = [], existingId = null) {
   return created.id;
 }
 
+async function saveStoreIdentity(identity, imageFile = null, existingId = null) {
+  await ensureFirebase();
+
+  const uploadedImage = await uploadIdentityImage(imageFile, identity.title);
+  const payload = {
+    title: identity.title || "",
+    description: identity.description || "",
+    buttonText: identity.buttonText || "Quero esse look",
+    targetCategory: identity.targetCategory || "",
+    image: uploadedImage || identity.image || "",
+    active: identity.active !== false,
+    order: Number.isFinite(Number(identity.order)) ? Number(identity.order) : 0,
+    updatedAt: firebaseModules.serverTimestamp(),
+  };
+
+  if (existingId) {
+    await firebaseModules.updateDoc(firebaseModules.doc(db, "storeIdentities", existingId), payload);
+    return existingId;
+  }
+
+  payload.createdAt = firebaseModules.serverTimestamp();
+  const created = await firebaseModules.addDoc(identitiesCollection(), payload);
+  return created.id;
+}
+
+async function updateStoreIdentityActive(id, active) {
+  await ensureFirebase();
+  await firebaseModules.updateDoc(firebaseModules.doc(db, "storeIdentities", id), {
+    active: Boolean(active),
+    updatedAt: firebaseModules.serverTimestamp(),
+  });
+}
+
+async function deleteStoreIdentity(id) {
+  await ensureFirebase();
+  await firebaseModules.deleteDoc(firebaseModules.doc(db, "storeIdentities", id));
+}
+
 async function updateProductStatus(id, status) {
   await ensureFirebase();
   await firebaseModules.updateDoc(firebaseModules.doc(db, "products", id), {
@@ -306,9 +400,13 @@ async function logout() {
 window.PrimeFirebase = {
   isConfigured: () => configured,
   fetchProducts,
+  fetchStoreIdentities,
   fetchStoreConfig,
   saveStoreConfig,
   saveProduct,
+  saveStoreIdentity,
+  updateStoreIdentityActive,
+  deleteStoreIdentity,
   updateProductStatus,
   deleteProduct,
   watchAuth,

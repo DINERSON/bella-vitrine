@@ -21,8 +21,16 @@ const imagePreviewGrid = document.querySelector("#image-preview-grid");
 const sizeTypeSelect = document.querySelector("#size-type-select");
 const stockGrid = document.querySelector("#stock-grid");
 const customSizeRow = document.querySelector("#custom-size-row");
+const identityForm = document.querySelector("#identity-form");
+const identityFormMessage = document.querySelector("#identity-form-message");
+const clearIdentityFormButton = document.querySelector("#clear-identity-form");
+const identityCategorySelect = document.querySelector("#identity-category-select");
+const identityImagePreview = document.querySelector("#identity-image-preview");
+const identityList = document.querySelector("#admin-identity-list");
+const refreshIdentitiesButton = document.querySelector("#refresh-identities");
 
 let products = [];
+let identities = [];
 
 const STOCK_FIELDS = [
   { label: "P", field: "stock_P" },
@@ -359,6 +367,133 @@ function fillCategoryOptions() {
   categorySelect.innerHTML = productCategories
     .map((category) => `<option value="${escapeHtml(category)}">${escapeHtml(category)}</option>`)
     .join("");
+
+  if (identityCategorySelect) {
+    identityCategorySelect.innerHTML = CATALOG_FILTERS.filter((category) => category !== "Todos")
+      .map((category) => `<option value="${escapeHtml(category)}">${escapeHtml(category)}</option>`)
+      .join("");
+  }
+}
+
+function identityImageFileFromForm() {
+  return identityForm?.elements.identityImageFile?.files?.[0] || null;
+}
+
+function identityFromForm() {
+  const data = new FormData(identityForm);
+  return {
+    firestoreId: data.get("firestoreId"),
+    title: String(data.get("title") || "").trim(),
+    description: String(data.get("description") || "").trim(),
+    buttonText: String(data.get("buttonText") || "").trim() || "Quero esse look",
+    targetCategory: String(data.get("targetCategory") || "").trim(),
+    image: String(data.get("image") || "").trim(),
+    active: data.get("active") !== "false",
+    order: Number(data.get("order")) || 0,
+  };
+}
+
+function normalizeIdentityImage(identity) {
+  return String(identity?.image || identity?.imagem || "").trim();
+}
+
+function renderIdentityImagePreview() {
+  if (!identityImagePreview || !identityForm) return;
+
+  const selectedFile = identityImageFileFromForm();
+  const image = selectedFile ? URL.createObjectURL(selectedFile) : String(identityForm.elements.image.value || "").trim();
+
+  identityImagePreview.innerHTML = image
+    ? `
+      <div class="image-preview-card">
+        <img src="${escapeHtml(image)}" alt="Previa da identidade" onerror="this.closest('.image-preview-card').classList.add('missing'); this.remove();">
+        <span>Imagem da identidade</span>
+      </div>
+    `
+    : '<div class="image-preview-card missing"><span>Imagem em breve</span></div>';
+}
+
+function resetIdentityForm() {
+  if (!identityForm) return;
+  identityForm.reset();
+  identityForm.elements.firestoreId.value = "";
+  identityForm.elements.buttonText.value = "Quero esse look";
+  identityForm.elements.active.value = "true";
+  setMessage(identityFormMessage, "");
+  renderIdentityImagePreview();
+}
+
+function fillIdentityForm(identity) {
+  if (!identityForm) return;
+  identityForm.elements.firestoreId.value = identity.firestoreId || identity.id || "";
+  identityForm.elements.title.value = identity.title || "";
+  identityForm.elements.description.value = identity.description || "";
+  identityForm.elements.buttonText.value = identity.buttonText || "Quero esse look";
+  identityForm.elements.targetCategory.value = identity.targetCategory || "Masculino";
+  identityForm.elements.order.value = Number.isFinite(Number(identity.order)) ? Number(identity.order) : 0;
+  identityForm.elements.active.value = identity.active === false ? "false" : "true";
+  identityForm.elements.image.value = normalizeIdentityImage(identity);
+  if (identityForm.elements.identityImageFile) identityForm.elements.identityImageFile.value = "";
+  setMessage(identityFormMessage, `Editando ${identity.title || "identidade"}.`);
+  renderIdentityImagePreview();
+  identityForm.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function identityCard(identity) {
+  const id = identity.firestoreId || identity.id;
+  const imageSrc = normalizeIdentityImage(identity);
+  const image = imageSrc
+    ? `<img src="${escapeHtml(imageSrc)}" alt="${escapeHtml(identity.title)}" onerror="this.closest('.admin-product-image').classList.add('missing'); this.remove();">`
+    : "";
+  const statusText = identity.active === false ? "Inativo" : "Ativo";
+  const toggleText = identity.active === false ? "Ativar" : "Desativar";
+
+  return `
+    <article class="admin-product" data-identity-id="${escapeHtml(id)}">
+      <div class="admin-product-image ${imageSrc ? "" : "missing"}">
+        ${image}
+        <span>Imagem em breve</span>
+      </div>
+      <div class="admin-product-info">
+        <span>Ordem ${escapeHtml(identity.order || 0)} · ${escapeHtml(identity.targetCategory || "Sem destino")}</span>
+        <h3>${escapeHtml(identity.title)}</h3>
+        <p>${escapeHtml(identity.buttonText || "Quero esse look")}</p>
+        <small>${escapeHtml(identity.description || "Sem descricao.")}</small>
+        <small>Status: ${escapeHtml(statusText)}</small>
+      </div>
+      <div class="admin-product-actions">
+        <button class="btn btn-outline" type="button" data-identity-action="edit">Editar</button>
+        <button class="btn btn-light" type="button" data-identity-action="toggle">${escapeHtml(toggleText)}</button>
+        <button class="btn danger-button" type="button" data-identity-action="delete">Excluir</button>
+      </div>
+    </article>
+  `;
+}
+
+function renderIdentities() {
+  if (!identityList) return;
+  const listedIdentities = [...identities].sort((a, b) => Number(a.order || 0) - Number(b.order || 0));
+  identityList.innerHTML = listedIdentities.length
+    ? listedIdentities.map(identityCard).join("")
+    : '<div class="empty-state">Nenhuma identidade cadastrada ainda. A vitrine usa os tres cards padrao enquanto isso.</div>';
+}
+
+async function loadIdentities() {
+  if (!identityList) return;
+  identityList.innerHTML = '<div class="empty-state">Carregando identidades...</div>';
+
+  if (!isFirebaseReady()) {
+    identities = [];
+    renderIdentities();
+    return;
+  }
+
+  try {
+    identities = await firebase.fetchStoreIdentities();
+    renderIdentities();
+  } catch (error) {
+    identityList.innerHTML = '<div class="empty-state">Nao foi possivel carregar as identidades agora.</div>';
+  }
 }
 
 function productFromForm() {
@@ -593,6 +728,38 @@ async function handleSaveStoreConfig(event) {
   }
 }
 
+async function handleSaveIdentity(event) {
+  event.preventDefault();
+
+  if (!isFirebaseReady()) {
+    setMessage(identityFormMessage, "Configure o Firebase antes de salvar identidades.", "error");
+    return;
+  }
+
+  const identity = identityFromForm();
+  const imageFile = identityImageFileFromForm();
+  const existingId = identity.firestoreId || null;
+
+  setMessage(identityFormMessage, "Salvando identidade...");
+  identityForm.querySelector("#save-identity").disabled = true;
+
+  try {
+    await firebase.saveStoreIdentity(identity, imageFile, existingId);
+    resetIdentityForm();
+    setMessage(identityFormMessage, "Identidade salva com sucesso.", "success");
+    await loadIdentities();
+  } catch (error) {
+    const uploadFailed = error?.message === "UPLOAD_ERROR" || error?.uploadError;
+    setMessage(
+      identityFormMessage,
+      uploadFailed ? "Erro ao enviar imagem. Tente novamente." : "Nao foi possivel salvar a identidade. Tente novamente.",
+      "error"
+    );
+  } finally {
+    identityForm.querySelector("#save-identity").disabled = false;
+  }
+}
+
 async function handleProductAction(event) {
   const button = event.target.closest("[data-action]");
   if (!button) return;
@@ -627,11 +794,46 @@ async function handleProductAction(event) {
   }
 }
 
+async function handleIdentityAction(event) {
+  const button = event.target.closest("[data-identity-action]");
+  if (!button) return;
+
+  const card = button.closest("[data-identity-id]");
+  const id = card?.dataset.identityId;
+  const identity = identities.find((item) => (item.firestoreId || item.id) === id);
+  if (!identity) return;
+
+  const action = button.dataset.identityAction;
+
+  if (action === "edit") {
+    fillIdentityForm(identity);
+    return;
+  }
+
+  try {
+    button.disabled = true;
+    if (action === "toggle") {
+      await firebase.updateStoreIdentityActive(id, identity.active === false);
+    }
+    if (action === "delete") {
+      const confirmed = window.confirm(`Tem certeza que deseja excluir ${identity.title}?`);
+      if (!confirmed) return;
+      await firebase.deleteStoreIdentity(id);
+    }
+    await loadIdentities();
+  } catch (error) {
+    window.alert("Nao foi possivel concluir a acao. Tente novamente.");
+  } finally {
+    button.disabled = false;
+  }
+}
+
 function showLoggedIn() {
   loginView.hidden = true;
   adminApp.hidden = false;
   loadStoreConfig();
   loadProducts();
+  loadIdentities();
 }
 
 function showLoggedOut() {
@@ -644,16 +846,22 @@ configWarning.hidden = isFirebaseReady();
 loginForm.addEventListener("submit", handleLogin);
 productForm.addEventListener("submit", handleSaveProduct);
 storeConfigForm.addEventListener("submit", handleSaveStoreConfig);
+identityForm?.addEventListener("submit", handleSaveIdentity);
 clearFormButton.addEventListener("click", resetForm);
+clearIdentityFormButton?.addEventListener("click", resetIdentityForm);
 productList.addEventListener("click", handleProductAction);
+identityList?.addEventListener("click", handleIdentityAction);
 logoutButton.addEventListener("click", () => firebase.logout());
 adminSearch?.addEventListener("input", renderProducts);
 adminStatusFilter?.addEventListener("change", renderProducts);
 refreshProductsButton?.addEventListener("click", loadProducts);
+refreshIdentitiesButton?.addEventListener("click", loadIdentities);
 PHOTO_FIELDS.flatMap(({ file, url }) => [file, url]).forEach((field) => {
   productForm.elements[field]?.addEventListener("change", renderImagePreview);
   productForm.elements[field]?.addEventListener("input", renderImagePreview);
 });
+identityForm?.elements.identityImageFile?.addEventListener("change", renderIdentityImagePreview);
+identityForm?.elements.image?.addEventListener("input", renderIdentityImagePreview);
 sizeTypeSelect?.addEventListener("change", () => {
   if (productForm.elements.customSizes) productForm.elements.customSizes.value = "";
   renderStockGrid(sizeTypeSelect.value);
@@ -673,4 +881,5 @@ if (isFirebaseReady()) {
 
 loadStoreConfig();
 renderImagePreview();
+renderIdentityImagePreview();
 renderStockGrid("roupas");

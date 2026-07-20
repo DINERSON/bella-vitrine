@@ -56,14 +56,16 @@
 
 .admin-form,
 .product-form,
-.store-config-form {
+.store-config-form,
+.identity-form {
   display: grid;
   gap: 14px;
 }
 
 .admin-form label,
 .product-form label,
-.store-config-form label {
+.store-config-form label,
+.identity-form label {
   display: grid;
   gap: 7px;
   color: #fff;
@@ -72,6 +74,9 @@
 
 .admin-form input,
 .store-config-form input,
+.identity-form input,
+.identity-form select,
+.identity-form textarea,
 .product-form input,
 .product-form select,
 .product-form textarea {
@@ -89,8 +94,15 @@
   resize: vertical;
 }
 
+.identity-form textarea {
+  resize: vertical;
+}
+
 .admin-form input:focus,
 .store-config-form input:focus,
+.identity-form input:focus,
+.identity-form select:focus,
+.identity-form textarea:focus,
 .product-form input:focus,
 .product-form select:focus,
 .product-form textarea:focus {
@@ -167,7 +179,7 @@
 
 .admin-shortcuts {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
 }
 
@@ -194,7 +206,8 @@
 }
 
 .product-form,
-.store-config-form {
+.store-config-form,
+.identity-form {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
@@ -305,6 +318,14 @@
   position: static;
   color: var(--primary);
   text-transform: uppercase;
+}
+
+.identity-preview {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.identity-list-title {
+  margin-top: 28px;
 }
 
 .admin-list-tools {
@@ -440,6 +461,7 @@
   .stats-grid,
   .product-form,
   .store-config-form,
+  .identity-form,
   .admin-shortcuts,
   .admin-list-tools {
     grid-template-columns: 1fr;

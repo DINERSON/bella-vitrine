@@ -4,7 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin | Vitrine Moda</title>
-    <link rel="icon" type="image/svg+xml" href="../assets/brand/logo-vitrine-moda.svg" />
+    <link rel="icon" type="image/png" href="../assets/brand/favicon.png" />
+    <link rel="shortcut icon" href="../favicon.ico" />
+    <link rel="apple-touch-icon" href="../assets/brand/favicon.png" />
     <link rel="stylesheet" href="../styles.css" />
     <link rel="stylesheet" href="/admin/admin.css" />
   </head>
@@ -79,6 +81,7 @@
           <a class="btn btn-primary" href="#product-form">Cadastrar produto</a>
           <a class="btn btn-outline" href="#admin-product-list">Ver produtos</a>
           <a class="btn btn-light" href="#store-config-form">Configuracoes da loja</a>
+          <a class="btn btn-outline" href="#identity-form">Identidades da Loja</a>
         </section>
 
         <section class="admin-card">
@@ -137,6 +140,67 @@
             <button class="btn btn-primary full-field" type="submit" id="save-store-config">Salvar configuracoes</button>
             <p class="form-message full-field" id="store-config-message" aria-live="polite"></p>
           </form>
+        </section>
+
+        <section class="admin-card" id="store-identities-admin">
+          <div class="admin-section-title">
+            <div>
+              <p class="eyebrow">Vitrine publica</p>
+              <h2>Identidades da Loja</h2>
+            </div>
+            <button class="btn btn-outline" type="button" id="clear-identity-form">Limpar</button>
+          </div>
+
+          <form class="identity-form" id="identity-form">
+            <input type="hidden" name="firestoreId" />
+            <label>
+              Titulo do card
+              <input name="title" placeholder="Moda Masculina" required />
+            </label>
+            <label>
+              Texto do botao
+              <input name="buttonText" placeholder="Quero esse look" />
+            </label>
+            <label class="full-field">
+              Descricao
+              <textarea name="description" rows="3" placeholder="Pecas urbanas para quem gosta de presenca e estilo."></textarea>
+            </label>
+            <label>
+              Categoria/filtro de destino
+              <select name="targetCategory" id="identity-category-select" required></select>
+            </label>
+            <label>
+              Ordem
+              <input name="order" type="number" min="0" step="1" placeholder="1" />
+            </label>
+            <label>
+              Status
+              <select name="active">
+                <option value="true">Ativo</option>
+                <option value="false">Inativo</option>
+              </select>
+            </label>
+            <label>
+              Imagem upload
+              <input name="identityImageFile" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" />
+            </label>
+            <label class="full-field">
+              Imagem URL
+              <input name="image" placeholder="fotos/look-casual-urbano.jpg" />
+            </label>
+            <div class="image-preview-grid identity-preview full-field" id="identity-image-preview" aria-label="Previa da imagem da identidade"></div>
+            <button class="btn btn-primary full-field" type="submit" id="save-identity">Salvar identidade</button>
+            <p class="form-message full-field" id="identity-form-message" aria-live="polite"></p>
+          </form>
+
+          <div class="admin-section-title identity-list-title">
+            <div>
+              <p class="eyebrow">Cards cadastrados</p>
+              <h2>Lista de identidades</h2>
+            </div>
+            <button class="btn btn-outline" type="button" id="refresh-identities">Atualizar lista</button>
+          </div>
+          <div class="admin-product-list" id="admin-identity-list"></div>
         </section>
 
         <section class="admin-card">

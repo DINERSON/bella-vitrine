@@ -26,6 +26,7 @@ const productModalContent = document.querySelector("#product-modal-content");
 
 let activeFilter = "Todos";
 let visibleProducts = [...PRODUCTS];
+let visibleLooks = [...LOOKS];
 let menuReady = false;
 
 function setText(selector, text) {
@@ -485,22 +486,41 @@ function renderPromoProducts() {
 }
 
 function renderLooks() {
-  lookGrid.innerHTML = LOOKS.map((look) => {
-    const message = replaceVars(SITE_CONTENT.lookMessage, { look: look.nome });
-    const theme = getTheme(look.categoria || look.nome);
+  const looks = visibleLooks
+    .filter((look) => look.active !== false)
+    .sort((a, b) => Number(a.order || 0) - Number(b.order || 0));
+
+  lookGrid.innerHTML = looks.map((look) => {
+    const title = look.title || look.nome || "";
+    const description = look.description || look.descricao || "";
+    const buttonText = look.buttonText || SITE_CONTENT.buttons.wantLook;
+    const targetCategory = look.targetCategory || look.categoria || "Todos";
+    const image = look.image || look.imagem || "";
+    const theme = getTheme(targetCategory || title);
+    const imageMarkup = image
+      ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(title)}" onerror="this.closest('.look-card').classList.add('look-no-image'); this.remove();">`
+      : "";
+
     return `
-      <article class="look-card theme-${theme}">
-        <img src="${escapeHtml(look.imagem)}" alt="${escapeHtml(look.nome)}" onerror="this.closest('.look-card').classList.add('look-no-image'); this.remove();">
+      <article class="look-card theme-${theme} ${image ? "" : "look-no-image"}">
+        ${imageMarkup}
         <div>
-          <h3>${escapeHtml(look.nome)}</h3>
-          <p>${escapeHtml(look.descricao)}</p>
-          <a class="btn btn-outline" href="${whatsappUrl(message)}" target="_blank" rel="noopener">
-            ${SITE_CONTENT.buttons.wantLook}
-          </a>
+          <h3>${escapeHtml(title)}</h3>
+          <p>${escapeHtml(description)}</p>
+          <button class="btn btn-outline look-filter-button" type="button" data-look-filter="${escapeHtml(targetCategory)}">
+            ${escapeHtml(buttonText)}
+          </button>
         </div>
       </article>
     `;
   }).join("");
+
+  lookGrid.querySelectorAll("[data-look-filter]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const filter = button.dataset.lookFilter || "Todos";
+      setActiveFilter(CATALOG_FILTERS.includes(filter) ? filter : "Todos");
+    });
+  });
 }
 
 function renderAllProductSections() {
@@ -813,6 +833,16 @@ async function loadFirebaseData() {
       applyRemoteStoreConfig(remoteStoreConfig);
       renderMenu();
       applyStoreConfig();
+    }
+
+    try {
+      const remoteIdentities = await firebase.fetchStoreIdentities();
+      const activeIdentities = remoteIdentities.filter((identity) => identity.active !== false);
+      visibleLooks = activeIdentities.length ? remoteIdentities : [...LOOKS];
+      renderLooks();
+    } catch (error) {
+      visibleLooks = [...LOOKS];
+      renderLooks();
     }
 
     const remoteProducts = await firebase.fetchProducts();
