@@ -189,6 +189,13 @@ function safeFileNamePart(value, fallback = "produto") {
 }
 
 async function uploadProductImages(imageFiles, productCode) {
+  if (!storage) {
+    console.error("[Vitrine Moda] Firebase Storage nao inicializado.", { configured, config });
+    const error = new Error("UPLOAD_ERROR");
+    error.uploadError = true;
+    throw error;
+  }
+
   const files = Array.isArray(imageFiles) ? imageFiles : [];
   const timestamp = Date.now();
   const safeCode = safeFileNamePart(productCode);
@@ -199,6 +206,7 @@ async function uploadProductImages(imageFiles, productCode) {
     const file = item?.file || item;
     if (!file) continue;
     if (file.type && !allowedTypes.includes(file.type)) {
+      console.error("[Vitrine Moda] Tipo de imagem nao permitido.", { name: file.name, type: file.type });
       const error = new Error("UPLOAD_ERROR");
       error.uploadError = true;
       throw error;
@@ -216,6 +224,12 @@ async function uploadProductImages(imageFiles, productCode) {
         url: await firebaseModules.getDownloadURL(imageRef),
       });
     } catch (error) {
+      console.error("[Vitrine Moda] Erro ao enviar foto para Firebase Storage.", {
+        path: `products/${safeCode}-${timestamp}-${imageNumber}.jpg`,
+        name: file.name,
+        type: file.type,
+        error,
+      });
       const uploadError = new Error("UPLOAD_ERROR");
       uploadError.uploadError = true;
       uploadError.cause = error;
@@ -310,12 +324,23 @@ async function saveProduct(product, imageFiles = [], existingId = null) {
   payload.imagens = imageSlots.filter(Boolean).filter((image, index, list) => list.indexOf(image) === index);
 
   if (existingId) {
-    await firebaseModules.updateDoc(firebaseModules.doc(db, "products", existingId), payload);
+    try {
+      await firebaseModules.updateDoc(firebaseModules.doc(db, "products", existingId), payload);
+    } catch (error) {
+      console.error("[Vitrine Moda] Erro ao atualizar produto no Firestore.", { existingId, payload, error });
+      throw error;
+    }
     return existingId;
   }
 
   payload.createdAt = firebaseModules.serverTimestamp();
-  const created = await firebaseModules.addDoc(productsCollection(), payload);
+  let created;
+  try {
+    created = await firebaseModules.addDoc(productsCollection(), payload);
+  } catch (error) {
+    console.error("[Vitrine Moda] Erro ao criar produto no Firestore.", { payload, error });
+    throw error;
+  }
   return created.id;
 }
 

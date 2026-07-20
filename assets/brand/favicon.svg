@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="72" fill="#050505"/>
+  <rect x="36" y="36" width="440" height="440" rx="48" fill="none" stroke="#D6B15E" stroke-width="18"/>
+  <rect x="58" y="58" width="396" height="396" rx="34" fill="none" stroke="#F1D38A" stroke-opacity=".35" stroke-width="4"/>
+  <text
+    x="256"
+    y="302"
+    text-anchor="middle"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="178"
+    font-weight="700"
+    fill="#D6B15E"
+    stroke="#F1D38A"
+    stroke-width="3"
+    letter-spacing="-12"
+  >VM</text>
+</svg>

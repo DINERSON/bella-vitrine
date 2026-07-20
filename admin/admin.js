@@ -31,6 +31,8 @@ const refreshIdentitiesButton = document.querySelector("#refresh-identities");
 
 let products = [];
 let identities = [];
+let currentProductImages = ["", "", "", ""];
+const removedProductPhotoSlots = new Set();
 
 const STOCK_FIELDS = [
   { label: "P", field: "stock_P" },
@@ -51,10 +53,10 @@ const SIZE_GRIDS = {
 };
 
 const PHOTO_FIELDS = [
-  { file: "foto1", current: "imagemPrincipal", remove: "removeFoto1", label: "Foto principal" },
-  { file: "foto2", current: "imagem2", remove: "removeFoto2", label: "Foto 2" },
-  { file: "foto3", current: "imagem3", remove: "removeFoto3", label: "Foto 3" },
-  { file: "foto4", current: "imagem4", remove: "removeFoto4", label: "Foto 4" },
+  { file: "foto1", label: "Foto principal" },
+  { file: "foto2", label: "Foto 2" },
+  { file: "foto3", label: "Foto 3" },
+  { file: "foto4", label: "Foto 4" },
 ];
 
 function normalizeKey(value) {
@@ -310,11 +312,8 @@ function normalizeImages(product) {
     .filter((image, index, list) => list.indexOf(image) === index);
 }
 
-function imagesFromForm(data) {
-  return PHOTO_FIELDS.map(({ current, remove }) => {
-    if (String(data.get(remove) || "") === "1") return "";
-    return String(data.get(current) || "").trim();
-  });
+function imagesFromForm() {
+  return PHOTO_FIELDS.map((_, index) => (removedProductPhotoSlots.has(index) ? "" : currentProductImages[index] || ""));
 }
 
 function imageFilesFromForm() {
@@ -325,9 +324,9 @@ function imageFilesFromForm() {
 }
 
 function clearImageFields() {
-  PHOTO_FIELDS.forEach(({ file, current, remove }) => {
-    productForm.elements[current].value = "";
-    productForm.elements[remove].value = "";
+  currentProductImages = ["", "", "", ""];
+  removedProductPhotoSlots.clear();
+  PHOTO_FIELDS.forEach(({ file }) => {
     if (productForm.elements[file]) productForm.elements[file].value = "";
   });
 }
@@ -335,16 +334,15 @@ function clearImageFields() {
 function renderImagePreview() {
   if (!imagePreviewGrid) return;
 
-  const data = new FormData(productForm);
-  const images = PHOTO_FIELDS.map(({ file, current, remove }) => {
+  const images = PHOTO_FIELDS.map(({ file }, index) => {
     const selectedFile = productForm.elements[file]?.files?.[0];
     if (selectedFile) return URL.createObjectURL(selectedFile);
-    if (String(data.get(remove) || "") === "1") return "";
-    return String(data.get(current) || "").trim();
+    if (removedProductPhotoSlots.has(index)) return "";
+    return currentProductImages[index] || "";
   });
 
   imagePreviewGrid.innerHTML = PHOTO_FIELDS
-    .map(({ file, current, remove, label }, index) => {
+    .map(({ label }, index) => {
       const image = images[index];
       if (!image) {
         return `
@@ -368,9 +366,7 @@ function renderImagePreview() {
 function fillImageFields(product) {
   clearImageFields();
   const images = normalizeImages(product);
-  PHOTO_FIELDS.forEach(({ current }, index) => {
-    productForm.elements[current].value = images[index] || "";
-  });
+  currentProductImages = PHOTO_FIELDS.map((_, index) => images[index] || "");
 }
 
 function fillCategoryOptions() {
@@ -515,7 +511,7 @@ async function loadIdentities() {
 
 function productFromForm() {
   const data = new FormData(productForm);
-  const imagens = imagesFromForm(data);
+  const imagens = imagesFromForm();
   const sizeType = normalizeSizeType(data.get("sizeType"));
   const tamanhos = sizesFromForm(data, sizeType);
   return {
@@ -562,8 +558,8 @@ function handleRemoveProductPhoto(event) {
   if (!field) return;
 
   if (productForm.elements[field.file]) productForm.elements[field.file].value = "";
-  productForm.elements[field.current].value = "";
-  productForm.elements[field.remove].value = "1";
+  currentProductImages[index] = "";
+  removedProductPhotoSlots.add(index);
   renderImagePreview();
 }
 
@@ -727,7 +723,7 @@ async function handleSaveProduct(event) {
   const imageFiles = imageFilesFromForm();
   const existingId = product.firestoreId || null;
 
-  setMessage(formMessage, "Salvando produto...");
+  setMessage(formMessage, imageFiles.length ? "Enviando fotos..." : "Salvando produto...");
   productForm.querySelector("#save-product").disabled = true;
 
   try {
@@ -736,10 +732,15 @@ async function handleSaveProduct(event) {
     setMessage(formMessage, "Produto salvo com sucesso.", "success");
     await loadProducts();
   } catch (error) {
+    console.error("[Vitrine Moda Admin] Erro ao salvar produto.", {
+      product,
+      imageFileCount: imageFiles.length,
+      error,
+    });
     const uploadFailed = error?.message === "UPLOAD_ERROR" || error?.uploadError;
     setMessage(
       formMessage,
-      uploadFailed ? "Erro ao enviar foto. Tente novamente." : "Não foi possível salvar. Confira sua internet e tente novamente.",
+      uploadFailed ? "Erro ao enviar foto. Tente novamente." : "Erro ao salvar produto.",
       "error"
     );
   } finally {
@@ -897,8 +898,13 @@ adminSearch?.addEventListener("input", renderProducts);
 adminStatusFilter?.addEventListener("change", renderProducts);
 refreshProductsButton?.addEventListener("click", loadProducts);
 refreshIdentitiesButton?.addEventListener("click", loadIdentities);
-PHOTO_FIELDS.forEach(({ file }) => {
-  productForm.elements[file]?.addEventListener("change", renderImagePreview);
+PHOTO_FIELDS.forEach(({ file }, index) => {
+  productForm.elements[file]?.addEventListener("change", () => {
+    if (productForm.elements[file]?.files?.[0]) {
+      removedProductPhotoSlots.delete(index);
+    }
+    renderImagePreview();
+  });
 });
 imagePreviewGrid?.addEventListener("click", handleRemoveProductPhoto);
 identityForm?.elements.identityImageFile?.addEventListener("change", renderIdentityImagePreview);
