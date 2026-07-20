@@ -168,9 +168,9 @@ const PRODUCTS = [
     tecido: "Algodão premium",
     preco: "69,90",
     precoAntigo: "",
-    imagem: "fotos/camiseta-oversized-preta.jpg",
+    imagem: "fotos/produto-oversized-preto.jpg",
     imagens: [
-      "fotos/camiseta-oversized-preta.jpg",
+      "fotos/produto-oversized-preto.jpg",
       "fotos/camisa-social-slim-branca.jpg",
       "fotos/bone-preto-urban.jpg",
     ],
@@ -197,7 +197,7 @@ const PRODUCTS = [
     imagem: "fotos/camisa-social-slim-branca.jpg",
     imagens: [
       "fotos/camisa-social-slim-branca.jpg",
-      "fotos/camiseta-oversized-preta.jpg",
+      "fotos/produto-oversized-preto.jpg",
     ],
     status: "Disponível",
     destaque: true,

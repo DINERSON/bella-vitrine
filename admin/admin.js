@@ -33,6 +33,8 @@ let products = [];
 let identities = [];
 let currentProductImages = ["", "", "", ""];
 const removedProductPhotoSlots = new Set();
+let currentIdentityImage = "";
+let identityImageRemoved = false;
 
 const STOCK_FIELDS = [
   { label: "P", field: "stock_P" },
@@ -388,14 +390,13 @@ function identityImageFileFromForm() {
 
 function identityFromForm() {
   const data = new FormData(identityForm);
-  const removeImage = String(data.get("removeIdentityImage") || "") === "1";
   return {
     firestoreId: data.get("firestoreId"),
     title: String(data.get("title") || "").trim(),
     description: String(data.get("description") || "").trim(),
     buttonText: String(data.get("buttonText") || "").trim() || "Quero esse look",
     targetCategory: String(data.get("targetCategory") || "").trim(),
-    image: removeImage ? "" : String(data.get("image") || "").trim(),
+    image: identityImageRemoved ? "" : currentIdentityImage,
     active: data.get("active") !== "false",
     order: Number(data.get("order")) || 0,
   };
@@ -409,15 +410,14 @@ function renderIdentityImagePreview() {
   if (!identityImagePreview || !identityForm) return;
 
   const selectedFile = identityImageFileFromForm();
-  const removed = identityForm.elements.removeIdentityImage.value === "1";
-  const image = selectedFile ? URL.createObjectURL(selectedFile) : removed ? "" : String(identityForm.elements.image.value || "").trim();
+  const image = selectedFile ? URL.createObjectURL(selectedFile) : identityImageRemoved ? "" : currentIdentityImage;
 
   identityImagePreview.innerHTML = image
     ? `
       <div class="image-preview-card">
         <img src="${escapeHtml(image)}" alt="Previa da identidade" onerror="this.closest('.image-preview-card').classList.add('missing'); this.remove();">
         <span>Imagem da identidade</span>
-        <button class="remove-photo-button" type="button" data-remove-identity-image aria-label="Remover imagem da identidade">Remover foto</button>
+        <button class="remove-photo-button" type="button" data-remove-identity-photo aria-label="Remover imagem da identidade">Remover foto</button>
       </div>
     `
     : '<div class="image-preview-card missing"><span>Imagem em breve</span></div>';
@@ -429,8 +429,8 @@ function resetIdentityForm() {
   identityForm.elements.firestoreId.value = "";
   identityForm.elements.buttonText.value = "Quero esse look";
   identityForm.elements.active.value = "true";
-  identityForm.elements.image.value = "";
-  identityForm.elements.removeIdentityImage.value = "";
+  currentIdentityImage = "";
+  identityImageRemoved = false;
   setMessage(identityFormMessage, "");
   renderIdentityImagePreview();
 }
@@ -444,8 +444,8 @@ function fillIdentityForm(identity) {
   identityForm.elements.targetCategory.value = identity.targetCategory || "Masculino";
   identityForm.elements.order.value = Number.isFinite(Number(identity.order)) ? Number(identity.order) : 0;
   identityForm.elements.active.value = identity.active === false ? "false" : "true";
-  identityForm.elements.image.value = normalizeIdentityImage(identity);
-  identityForm.elements.removeIdentityImage.value = "";
+  currentIdentityImage = normalizeIdentityImage(identity);
+  identityImageRemoved = false;
   if (identityForm.elements.identityImageFile) identityForm.elements.identityImageFile.value = "";
   setMessage(identityFormMessage, `Editando ${identity.title || "identidade"}.`);
   renderIdentityImagePreview();
@@ -562,13 +562,13 @@ function handleRemoveProductPhoto(event) {
   renderImagePreview();
 }
 
-function handleRemoveIdentityImage(event) {
-  const button = event.target.closest("[data-remove-identity-image]");
+function handleRemoveIdentityPhoto(event) {
+  const button = event.target.closest("[data-remove-identity-photo]");
   if (!button || !identityForm) return;
 
   if (identityForm.elements.identityImageFile) identityForm.elements.identityImageFile.value = "";
-  identityForm.elements.image.value = "";
-  identityForm.elements.removeIdentityImage.value = "1";
+  currentIdentityImage = "";
+  identityImageRemoved = true;
   renderIdentityImagePreview();
 }
 
@@ -905,8 +905,13 @@ PHOTO_FIELDS.forEach(({ file }, index) => {
   });
 });
 imagePreviewGrid?.addEventListener("click", handleRemoveProductPhoto);
-identityForm?.elements.identityImageFile?.addEventListener("change", renderIdentityImagePreview);
-identityImagePreview?.addEventListener("click", handleRemoveIdentityImage);
+identityForm?.elements.identityImageFile?.addEventListener("change", () => {
+  if (identityImageFileFromForm()) {
+    identityImageRemoved = false;
+  }
+  renderIdentityImagePreview();
+});
+identityImagePreview?.addEventListener("click", handleRemoveIdentityPhoto);
 sizeTypeSelect?.addEventListener("change", () => {
   if (productForm.elements.customSizes) productForm.elements.customSizes.value = "";
   renderStockGrid(sizeTypeSelect.value);
