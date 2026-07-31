@@ -193,6 +193,13 @@ function cleanBrandText(value) {
   return new RegExp(`^(${oldA}|${oldB})$`, "i").test(text) ? "Vitrine Moda" : text;
 }
 
+function cleanHeroTitle(value) {
+  const text = cleanBrandText(value);
+  return text && text.toLowerCase() !== String(STORE_CONFIG.storeName || "").toLowerCase()
+    ? text
+    : "Estilo que combina com você";
+}
+
 function cleanLogoInitials(value) {
   const text = String(value || "").trim().toUpperCase();
   return text === "PV" || text === "VP" ? "VM" : text;
@@ -550,7 +557,7 @@ function applyRemoteStoreConfig(remoteConfig) {
     if (value) STORE_CONFIG[key] = value;
   });
 
-  if (remoteConfig.heroTitle) SITE_CONTENT.hero.title = cleanBrandText(remoteConfig.heroTitle);
+  if (remoteConfig.heroTitle) SITE_CONTENT.hero.title = cleanHeroTitle(remoteConfig.heroTitle);
   if (remoteConfig.slogan) SITE_CONTENT.hero.slogan = remoteConfig.slogan;
   if (remoteConfig.heroSubtitle) SITE_CONTENT.hero.subtitle = remoteConfig.heroSubtitle;
   SITE_CONTENT.footer.text = `${STORE_CONFIG.storeName}: moda feminina, masculina e verao com compra rapida pelo WhatsApp.`;
@@ -582,7 +589,7 @@ function applyStoreConfig() {
   });
 
   setText("#hero-eyebrow", SITE_CONTENT.hero.eyebrow);
-  setText("#hero-title", SITE_CONTENT.hero.title);
+  setText("#hero-title", cleanHeroTitle(SITE_CONTENT.hero.title));
   setText("#hero-slogan", SITE_CONTENT.hero.slogan || STORE_CONFIG.slogan);
   setText("#hero-subtitle", SITE_CONTENT.hero.subtitle);
   setText("#hero-catalog-button", SITE_CONTENT.buttons.viewCatalog);

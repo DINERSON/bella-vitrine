@@ -2410,3 +2410,708 @@ h2 {
     text-align: left;
   }
 }
+
+/* Ajuste visual publico Vitrine Moda: paleta clara, premium e responsiva. */
+body:not(.admin-body) {
+  --bg: #f7f2ea;
+  --bg-2: #efe6da;
+  --bg-soft: #fbf7f1;
+  --surface: #fffaf3;
+  --surface-2: #f0e5d8;
+  --surface-soft: #f5ece2;
+  --card: #fffaf3;
+  --card-strong: #ffffff;
+  --primary: #b85c45;
+  --primary-dark: #934634;
+  --gold: #b8955a;
+  --gold-2: #d7bd83;
+  --gold-soft: #e5cf9a;
+  --champagne: #d6b15e;
+  --text: #171717;
+  --muted: #756a5f;
+  --border: rgba(184, 149, 90, 0.34);
+  --line: rgba(184, 149, 90, 0.24);
+  --shadow: 0 16px 34px rgba(55, 42, 28, 0.1);
+  --radius: 12px;
+  background:
+    radial-gradient(circle at 8% 4%, rgba(232, 211, 206, 0.58), transparent 24rem),
+    radial-gradient(circle at 92% 8%, rgba(184, 149, 90, 0.18), transparent 22rem),
+    linear-gradient(180deg, #f7f2ea 0%, #fbf7f1 48%, #f3eadf 100%);
+  color: var(--text);
+}
+
+body:not(.admin-body) .site-header {
+  background: rgba(23, 23, 23, 0.96);
+  border-bottom-color: rgba(184, 149, 90, 0.42);
+  box-shadow: 0 12px 26px rgba(23, 23, 23, 0.18);
+}
+
+body:not(.admin-body) .site-header::before {
+  background: linear-gradient(90deg, transparent, rgba(184, 149, 90, 0.76), transparent);
+}
+
+body:not(.admin-body) .brand-name,
+body:not(.admin-body) .drawer-header strong {
+  color: var(--gold-soft);
+}
+
+body:not(.admin-body) .brand-slogan,
+body:not(.admin-body) .drawer-brand-copy span {
+  color: rgba(247, 242, 234, 0.72);
+}
+
+body:not(.admin-body) .brand-mark {
+  border-color: rgba(229, 207, 154, 0.62);
+  background: #171717;
+  color: var(--gold-soft);
+  box-shadow: 0 0 0 1px rgba(184, 149, 90, 0.2), 0 10px 22px rgba(0, 0, 0, 0.24);
+}
+
+body:not(.admin-body) .nav-links {
+  border-color: rgba(229, 207, 154, 0.34);
+  background: rgba(255, 250, 243, 0.07);
+  color: rgba(247, 242, 234, 0.78);
+}
+
+body:not(.admin-body) .nav-links a:hover {
+  background: rgba(184, 149, 90, 0.16);
+  color: #fffaf3;
+}
+
+body:not(.admin-body) .menu-toggle {
+  border-color: rgba(229, 207, 154, 0.46);
+  background: #171717;
+}
+
+body:not(.admin-body) .section,
+body:not(.admin-body) .section-band {
+  padding: 70px 0;
+}
+
+body:not(.admin-body) .section-soft {
+  background:
+    linear-gradient(180deg, rgba(255, 250, 243, 0.9), rgba(245, 236, 226, 0.94)),
+    var(--surface-soft);
+}
+
+body:not(.admin-body) .hero {
+  min-height: auto;
+  padding: 52px 0 62px;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(232, 211, 206, 0.72), transparent 19rem),
+    radial-gradient(circle at 78% 16%, rgba(184, 149, 90, 0.16), transparent 22rem),
+    linear-gradient(180deg, #f7f2ea, #fffaf3);
+}
+
+body:not(.admin-body) .hero-media {
+  min-height: clamp(480px, 58vw, 640px);
+  border-color: rgba(184, 149, 90, 0.42);
+  border-radius: 28px;
+  background:
+    linear-gradient(115deg, rgba(232, 211, 206, 0.72) 0 38%, transparent 38%),
+    radial-gradient(circle at 84% 26%, rgba(184, 149, 90, 0.22), transparent 16rem),
+    linear-gradient(135deg, #fffaf3, #f7f2ea 58%, #efe6da);
+  box-shadow: 0 22px 48px rgba(71, 51, 30, 0.14);
+}
+
+body:not(.admin-body) .hero-media::before {
+  background:
+    linear-gradient(90deg, rgba(255, 250, 243, 0.76), rgba(255, 250, 243, 0.42), rgba(247, 242, 234, 0.1)),
+    linear-gradient(135deg, transparent 0 22%, rgba(184, 149, 90, 0.2) 22% 22.4%, transparent 22.4% 72%, rgba(232, 211, 206, 0.8) 72% 100%);
+}
+
+body:not(.admin-body) .hero-media::after {
+  border-color: rgba(184, 149, 90, 0.32);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.62);
+}
+
+body:not(.admin-body) .hero-no-image::before {
+  background:
+    linear-gradient(115deg, rgba(232, 211, 206, 0.78) 0 38%, transparent 38%),
+    radial-gradient(circle at 22% 60%, rgba(184, 149, 90, 0.18), transparent 15rem),
+    radial-gradient(circle at 82% 24%, rgba(232, 211, 206, 0.62), transparent 13rem),
+    linear-gradient(135deg, #fffaf3, #f7f2ea 58%, #efe6da);
+}
+
+body:not(.admin-body) .hero-no-image::after {
+  background:
+    linear-gradient(90deg, rgba(255, 250, 243, 0.9), rgba(255, 250, 243, 0.3), rgba(247, 242, 234, 0.12)),
+    linear-gradient(135deg, transparent 0 16%, rgba(184, 149, 90, 0.22) 16% 16.3%, transparent 16.3% 70%, rgba(184, 149, 90, 0.16) 70% 70.3%, transparent 70.3%);
+}
+
+body:not(.admin-body) .hero-overlay {
+  left: 8%;
+  top: 50%;
+  width: min(560px, 52vw);
+  transform: translateY(-50%);
+  justify-items: start;
+  text-align: left;
+  padding: 30px;
+  border: 1px solid rgba(184, 149, 90, 0.28);
+  border-radius: 22px;
+  background: rgba(255, 250, 243, 0.72);
+  box-shadow: 0 18px 40px rgba(55, 42, 28, 0.1);
+}
+
+body:not(.admin-body) .hero-overlay .eyebrow,
+body:not(.admin-body) .eyebrow,
+body:not(.admin-body) .text-link,
+body:not(.admin-body) .product-code {
+  color: var(--gold);
+}
+
+body:not(.admin-body) .hero-overlay h1 {
+  color: #171717;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(3rem, 6.4vw, 6.4rem);
+  letter-spacing: -0.03em;
+  line-height: 0.94;
+  text-shadow: none;
+}
+
+body:not(.admin-body) .hero-slogan {
+  color: var(--gold);
+  text-shadow: none;
+}
+
+body:not(.admin-body) .hero-overlay > p:not(.eyebrow),
+body:not(.admin-body) .section-description,
+body:not(.admin-body) .promo-banner p,
+body:not(.admin-body) .contact-grid p,
+body:not(.admin-body) .site-footer p,
+body:not(.admin-body) .catalog-feedback,
+body:not(.admin-body) .category-description,
+body:not(.admin-body) .product-description,
+body:not(.admin-body) .look-card p,
+body:not(.admin-body) .contact-card span {
+  color: var(--muted);
+}
+
+body:not(.admin-body) .hero-actions {
+  justify-content: flex-start;
+}
+
+body:not(.admin-body) .btn-primary {
+  background: var(--primary);
+  color: #fffaf3;
+  box-shadow: 0 14px 26px rgba(184, 92, 69, 0.22);
+}
+
+body:not(.admin-body) .btn-primary:hover {
+  background: var(--primary-dark);
+}
+
+body:not(.admin-body) .btn-outline {
+  border-color: var(--gold);
+  background: rgba(255, 250, 243, 0.72);
+  color: #171717;
+}
+
+body:not(.admin-body) .btn-light {
+  background: #fffaf3;
+  color: #171717;
+}
+
+body:not(.admin-body) .category-card,
+body:not(.admin-body) .product-card,
+body:not(.admin-body) .look-card,
+body:not(.admin-body) .contact-card,
+body:not(.admin-body) .product-modal-panel {
+  border-color: rgba(184, 149, 90, 0.26);
+  background: var(--card);
+  color: var(--text);
+  box-shadow: var(--shadow);
+}
+
+body:not(.admin-body) .category-card::before {
+  background: rgba(232, 211, 206, 0.58);
+}
+
+body:not(.admin-body) .category-card::after,
+body:not(.admin-body) .category-feminino::after,
+body:not(.admin-body) .category-moda-verao::after,
+body:not(.admin-body) .category-promocoes::after,
+body:not(.admin-body) .category-mais-vendidos::after,
+body:not(.admin-body) .category-infantil::after,
+body:not(.admin-body) .category-acessorios::after {
+  background: linear-gradient(90deg, var(--primary), var(--gold));
+}
+
+body:not(.admin-body) .category-icon {
+  border-color: rgba(184, 149, 90, 0.32);
+  background: #f7f2ea;
+  color: var(--gold);
+}
+
+body:not(.admin-body) .category-title,
+body:not(.admin-body) .product-info h3,
+body:not(.admin-body) .product-info dd,
+body:not(.admin-body) .product-modal-details h2,
+body:not(.admin-body) .product-modal-specs dd,
+body:not(.admin-body) .contact-card strong {
+  color: #171717;
+}
+
+body:not(.admin-body) .category-card small {
+  border-color: rgba(184, 149, 90, 0.28);
+  background: rgba(184, 92, 69, 0.08);
+  color: #171717;
+}
+
+body:not(.admin-body) .category-masculino,
+body:not(.admin-body) .category-oversized,
+body:not(.admin-body) .category-feminino,
+body:not(.admin-body) .category-moda-verao,
+body:not(.admin-body) .category-promocoes,
+body:not(.admin-body) .category-mais-vendidos,
+body:not(.admin-body) .category-infantil,
+body:not(.admin-body) .category-acessorios,
+body:not(.admin-body) .product-card.theme-masculino,
+body:not(.admin-body) .product-card.theme-feminino,
+body:not(.admin-body) .product-card.theme-verao {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 250, 243, 0.96)),
+    var(--card);
+}
+
+body:not(.admin-body) .filter-button {
+  border-color: rgba(184, 149, 90, 0.3);
+  background: #fffaf3;
+  color: #5f554b;
+}
+
+body:not(.admin-body) .filter-button.active,
+body:not(.admin-body) .filter-button:hover,
+body:not(.admin-body) .filter-feminino.active,
+body:not(.admin-body) .filter-feminino:hover,
+body:not(.admin-body) .filter-masculino.active,
+body:not(.admin-body) .filter-masculino:hover,
+body:not(.admin-body) .filter-oversized.active,
+body:not(.admin-body) .filter-oversized:hover,
+body:not(.admin-body) .filter-moda-verao.active,
+body:not(.admin-body) .filter-moda-verao:hover,
+body:not(.admin-body) .filter-promocoes.active,
+body:not(.admin-body) .filter-promocoes:hover {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: #fffaf3;
+}
+
+body:not(.admin-body) .product-card::before {
+  background: linear-gradient(90deg, var(--primary), var(--gold));
+  opacity: 0.64;
+}
+
+body:not(.admin-body) .product-image,
+body:not(.admin-body) .product-photo,
+body:not(.admin-body) .theme-masculino .product-photo,
+body:not(.admin-body) .theme-feminino .product-photo,
+body:not(.admin-body) .theme-verao .product-photo,
+body:not(.admin-body) .product-modal-photo,
+body:not(.admin-body) .product-thumb,
+body:not(.admin-body) .look-no-image::before {
+  background: linear-gradient(135deg, #f4ede4, #fffaf3);
+}
+
+body:not(.admin-body) .badge-promo,
+body:not(.admin-body) .badge-summer,
+body:not(.admin-body) .badge-status.available,
+body:not(.admin-body) .badge-promo-inline,
+body:not(.admin-body) .badge-available-inline {
+  background: var(--gold);
+  color: #171717;
+}
+
+body:not(.admin-body) .badge-status.sold,
+body:not(.admin-body) .badge-sold-inline,
+body:not(.admin-body) .btn-disabled {
+  background: #8a8177;
+  color: #f8f0e7;
+}
+
+body:not(.admin-body) .size-option {
+  border-color: rgba(184, 149, 90, 0.26);
+  background: #fffaf3;
+  color: #171717;
+}
+
+body:not(.admin-body) .size-option:hover,
+body:not(.admin-body) .size-option.selected {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: #fffaf3;
+}
+
+body:not(.admin-body) .size-option.is-empty,
+body:not(.admin-body) .size-option:disabled {
+  border-color: rgba(128, 122, 114, 0.2);
+  background: #ebe3d8;
+  color: #9b9186;
+}
+
+body:not(.admin-body) .price-row strong,
+body:not(.admin-body) .modal-price strong {
+  color: var(--primary);
+}
+
+body:not(.admin-body) .old-price {
+  color: #9b9186;
+}
+
+body:not(.admin-body) .product-details-button {
+  border-color: rgba(184, 149, 90, 0.34);
+  background: rgba(247, 242, 234, 0.72);
+  color: #171717;
+}
+
+body:not(.admin-body) .product-modal-backdrop {
+  background: rgba(23, 23, 23, 0.48);
+}
+
+body:not(.admin-body) .product-modal-panel {
+  background:
+    radial-gradient(circle at top left, rgba(232, 211, 206, 0.5), transparent 18rem),
+    linear-gradient(145deg, #fffaf3, #f7f2ea);
+}
+
+body:not(.admin-body) .promo-section {
+  background:
+    linear-gradient(135deg, rgba(184, 92, 69, 0.08), rgba(232, 211, 206, 0.42)),
+    #f7f2ea;
+  color: #171717;
+}
+
+body:not(.admin-body) .promo-banner {
+  border-color: rgba(184, 92, 69, 0.2);
+  background: #171717;
+  color: #fffaf3;
+  box-shadow: 0 16px 34px rgba(23, 23, 23, 0.13);
+}
+
+body:not(.admin-body) .promo-banner h2 {
+  color: #fffaf3;
+}
+
+body:not(.admin-body) .site-footer {
+  background: #171717;
+}
+
+@media (max-width: 1180px) {
+  body:not(.admin-body) .nav-links {
+    border-right-color: rgba(184, 149, 90, 0.36);
+    background:
+      radial-gradient(circle at top left, rgba(184, 149, 90, 0.16), transparent 13rem),
+      linear-gradient(180deg, rgba(23, 23, 23, 0.99), rgba(23, 23, 23, 0.98));
+  }
+
+  body:not(.admin-body) .drawer-header {
+    border-bottom-color: rgba(184, 149, 90, 0.28);
+    background: rgba(23, 23, 23, 0.98);
+  }
+
+  body:not(.admin-body) .drawer-close {
+    border-color: rgba(229, 207, 154, 0.32);
+    background: #24201b;
+  }
+
+  body:not(.admin-body) .nav-links a {
+    border-bottom-color: rgba(184, 149, 90, 0.18);
+    color: rgba(255, 250, 243, 0.94);
+  }
+}
+
+@media (max-width: 620px) {
+  body:not(.admin-body) .section,
+  body:not(.admin-body) .section-band {
+    padding: 48px 0;
+  }
+
+  body:not(.admin-body) .hero {
+    padding: 26px 0 40px;
+  }
+
+  body:not(.admin-body) .hero-media {
+    min-height: 500px;
+    padding: 0;
+    border-radius: 22px;
+  }
+
+  body:not(.admin-body) .hero-overlay {
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    top: 50%;
+    width: auto;
+    margin: 0;
+    transform: translateY(-50%);
+    padding: 22px;
+    background: rgba(255, 250, 243, 0.84);
+  }
+
+  body:not(.admin-body) .hero-overlay h1 {
+    font-size: clamp(2.55rem, 14vw, 4rem);
+  }
+
+  body:not(.admin-body) .hero-actions {
+    width: 100%;
+  }
+
+  body:not(.admin-body) .product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+}
+
+/* Segunda revisao visual: banner mais equilibrado e header mobile mais limpo. */
+body:not(.admin-body) .nav {
+  min-height: 76px;
+}
+
+body:not(.admin-body) .brand {
+  gap: 12px;
+}
+
+body:not(.admin-body) .brand-mark {
+  width: 42px;
+  height: 42px;
+  flex-basis: 42px;
+  font-size: 0.84rem;
+}
+
+body:not(.admin-body) .brand-name {
+  font-size: 1.05rem;
+  letter-spacing: 0.14em;
+}
+
+body:not(.admin-body) .hero {
+  padding: 42px 0 56px;
+}
+
+body:not(.admin-body) .hero-media {
+  min-height: clamp(390px, 42vw, 520px);
+  display: grid;
+  grid-template-columns: minmax(0, 0.98fr) minmax(320px, 0.82fr);
+  align-items: center;
+  padding: clamp(28px, 4vw, 54px);
+  overflow: hidden;
+}
+
+body:not(.admin-body) .hero-media::before {
+  content: "VM";
+  position: relative;
+  inset: auto;
+  z-index: 1;
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: center;
+  width: min(100%, 430px);
+  aspect-ratio: 1 / 1;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(184, 149, 90, 0.22);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255, 250, 243, 0.88), rgba(255, 250, 243, 0.52) 42%, transparent 43%),
+    linear-gradient(135deg, rgba(232, 211, 206, 0.62), rgba(184, 149, 90, 0.16));
+  color: rgba(184, 149, 90, 0.22);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(5.8rem, 10vw, 10rem);
+  font-weight: 800;
+  letter-spacing: -0.08em;
+  box-shadow:
+    inset 0 0 0 22px rgba(255, 250, 243, 0.42),
+    0 18px 44px rgba(71, 51, 30, 0.08);
+}
+
+body:not(.admin-body) .hero-media::after {
+  z-index: 2;
+  background:
+    linear-gradient(125deg, transparent 0 58%, rgba(184, 149, 90, 0.18) 58% 58.3%, transparent 58.3%),
+    radial-gradient(circle at 82% 26%, rgba(232, 211, 206, 0.38), transparent 13rem);
+  pointer-events: none;
+}
+
+body:not(.admin-body) .hero-media > img:not([hidden]) {
+  position: relative;
+  z-index: 2;
+  grid-column: 2;
+  justify-self: center;
+  width: min(100%, 430px);
+  height: min(440px, 100%);
+  min-height: 0;
+  border-radius: 24px;
+  object-fit: cover;
+  box-shadow: 0 18px 44px rgba(71, 51, 30, 0.12);
+}
+
+body:not(.admin-body) .hero-media > img[hidden] {
+  display: none !important;
+  min-height: 0;
+}
+
+body:not(.admin-body) .hero-media:has(> img:not([hidden]))::before {
+  opacity: 0.18;
+}
+
+body:not(.admin-body) .hero-overlay {
+  position: relative;
+  left: auto;
+  top: auto;
+  z-index: 3;
+  grid-column: 1;
+  grid-row: 1;
+  width: min(100%, 560px);
+  transform: none;
+  padding: clamp(24px, 3vw, 34px);
+}
+
+body:not(.admin-body) .hero-overlay h1 {
+  max-width: 520px;
+  font-size: clamp(2.45rem, 4.7vw, 5.3rem);
+  letter-spacing: -0.045em;
+}
+
+body:not(.admin-body) .hero-overlay > p:not(.eyebrow) {
+  max-width: 480px;
+  color: #5f554b;
+  font-size: 1rem;
+  font-weight: 700;
+  text-shadow: none;
+}
+
+body:not(.admin-body) .hero-actions .btn-whatsapp {
+  border: 1px solid rgba(37, 133, 78, 0.34);
+  background: rgba(255, 250, 243, 0.88);
+  color: #116033;
+  box-shadow: 0 12px 26px rgba(17, 96, 51, 0.08);
+}
+
+body:not(.admin-body) .hero-actions .btn-whatsapp:hover {
+  background: #e8f7ed;
+  color: #0f4f2c;
+}
+
+body:not(.admin-body) .product-card {
+  display: flex;
+  flex-direction: column;
+}
+
+body:not(.admin-body) .product-info {
+  flex: 1;
+}
+
+body:not(.admin-body) .product-photo img,
+body:not(.admin-body) .product-modal-photo img,
+body:not(.admin-body) .product-thumb img,
+body:not(.admin-body) .look-card img {
+  object-fit: cover;
+  object-position: center;
+}
+
+@media (max-width: 1180px) {
+  body:not(.admin-body) .nav {
+    grid-template-columns: 58px 1fr 58px;
+  }
+
+  body:not(.admin-body) .brand {
+    grid-column: 2;
+    justify-self: center;
+    transform: none;
+  }
+
+  body:not(.admin-body) .menu-toggle {
+    grid-column: 1;
+  }
+}
+
+@media (max-width: 860px) {
+  body:not(.admin-body) .hero-media {
+    display: block;
+    padding: 22px;
+    min-height: auto;
+  }
+
+  body:not(.admin-body) .hero-media::before {
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+    width: min(38vw, 190px);
+    font-size: clamp(3.6rem, 14vw, 5.4rem);
+    opacity: 0.58;
+  }
+
+  body:not(.admin-body) .hero-media > img:not([hidden]) {
+    display: block;
+    width: min(100%, 320px);
+    height: 260px;
+    margin: 16px auto 0;
+  }
+
+  body:not(.admin-body) .hero-overlay {
+    width: 100%;
+  }
+}
+
+@media (max-width: 620px) {
+  body:not(.admin-body) .nav {
+    min-height: 68px;
+    grid-template-columns: 52px 1fr 52px;
+  }
+
+  body:not(.admin-body) .brand {
+    gap: 8px;
+  }
+
+  body:not(.admin-body) .brand-mark {
+    width: 34px;
+    height: 34px;
+    flex-basis: 34px;
+  }
+
+  body:not(.admin-body) .brand-name {
+    max-width: none;
+    font-size: 0.78rem;
+    text-align: left;
+  }
+
+  body:not(.admin-body) .hero-media {
+    min-height: auto;
+    gap: 14px;
+    padding: 16px;
+  }
+
+  body:not(.admin-body) .hero-overlay {
+    position: relative;
+    left: auto;
+    right: auto;
+    top: auto;
+    width: 100%;
+    transform: none;
+    padding: 20px;
+  }
+
+  body:not(.admin-body) .hero-overlay h1 {
+    font-size: clamp(2.1rem, 10.5vw, 3.1rem);
+    line-height: 0.98;
+  }
+
+  body:not(.admin-body) .hero-slogan {
+    font-size: 1rem;
+  }
+
+  body:not(.admin-body) .hero-overlay > p:not(.eyebrow) {
+    font-size: 0.9rem;
+    line-height: 1.55;
+  }
+
+  body:not(.admin-body) .hero-actions {
+    gap: 10px;
+  }
+
+  body:not(.admin-body) .hero-media::before {
+    right: 12px;
+    bottom: 12px;
+    width: min(34vw, 128px);
+    font-size: clamp(2.8rem, 13vw, 4.2rem);
+  }
+}

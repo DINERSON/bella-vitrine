@@ -36,14 +36,14 @@ const SITE_CONTENT = {
   buttons: {
     whatsapp: "Comprar pelo WhatsApp",
     buyWhatsapp: "Comprar pelo WhatsApp",
-    viewCatalog: "Ver catálogo",
+    viewCatalog: "VER NOVIDADES",
     viewInstagram: "Ver Instagram",
     sold: "Produto vendido",
     wantLook: "Quero esse look",
   },
   hero: {
     eyebrow: "MODA PREMIUM ONLINE",
-    title: "Vitrine Moda",
+    title: "Estilo que combina com você",
     slogan: "Moda que realça você",
     subtitle:
       "Moda feminina, masculina e verão em uma vitrine simples, moderna e direta pelo WhatsApp.",
