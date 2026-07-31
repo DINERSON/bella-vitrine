@@ -16,6 +16,7 @@ const storeConfigMessage = document.querySelector("#store-config-message");
 const saveStoreConfigButton = document.querySelector("#save-store-config");
 const adminSearch = document.querySelector("#admin-search");
 const adminStatusFilter = document.querySelector("#admin-status-filter");
+const adminGroupFilters = document.querySelector("#admin-group-filters");
 const refreshProductsButton = document.querySelector("#refresh-products");
 const imagePreviewGrid = document.querySelector("#image-preview-grid");
 const sizeTypeSelect = document.querySelector("#size-type-select");
@@ -35,6 +36,7 @@ let currentProductImages = ["", "", "", ""];
 const removedProductPhotoSlots = new Set();
 let currentIdentityImage = "";
 let identityImageRemoved = false;
+let activeAdminGroupFilter = "Todos";
 
 const STOCK_FIELDS = [
   { label: "P", field: "stock_P" },
@@ -61,11 +63,84 @@ const PHOTO_FIELDS = [
   { file: "foto4", label: "Foto 4" },
 ];
 
+const ADMIN_PRODUCT_GROUPS = [
+  "Plus Size",
+  "Camisetas gola polo",
+  "Camisetas e blusas",
+  "Camisas",
+  "Vestidos",
+  "Conjuntos",
+  "Calças",
+  "Shorts e bermudas",
+  "Saias",
+  "Calçados",
+  "Acessórios",
+  "Outros",
+];
+
+const ADMIN_GROUP_FILTERS = ["Todos", "Plus Size", "Gola Polo", ...ADMIN_PRODUCT_GROUPS.slice(2)];
+
 function normalizeKey(value) {
   return String(value || "")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase();
+}
+
+function compactText(value) {
+  return normalizeKey(value).replace(/\s+/g, " ").trim();
+}
+
+function hasAnyTerm(text, terms) {
+  return terms.some((term) => text.includes(term));
+}
+
+function hasWord(text, words) {
+  return words.some((word) => new RegExp(`(^|[^a-z0-9])${word}($|[^a-z0-9])`, "i").test(text));
+}
+
+function productGroupSearchText(product) {
+  const sizes = normalizeSizes(product).map((size) => size.label).join(" ");
+  return compactText([product.nome, product.descricao, product.categoria, product.subcategoria, product.tamanhos, sizes].join(" "));
+}
+
+function adminProductGroup(product) {
+  const text = productGroupSearchText(product);
+  const category = compactText(product.categoria);
+
+  if (hasAnyTerm(text, ["plus size", "tamanho especial", "tamanhos especiais", "curvy"]) || hasWord(text, ["plus", "g1", "g2", "g3", "g4", "g5"])) {
+    return "Plus Size";
+  }
+
+  if (hasAnyTerm(text, ["gola polo", "camisa polo"]) || hasWord(text, ["polo"])) return "Camisetas gola polo";
+  if (hasAnyTerm(text, ["camiseta", "t shirt", "t-shirt", "baby look"]) || hasWord(text, ["blusa", "blusas", "regata", "cropped"])) return "Camisetas e blusas";
+  if (hasAnyTerm(text, ["camisa social", "camisa slim", "camisa manga", "camisa masculina", "camisa feminina"]) || hasWord(text, ["camisa", "camisas"])) return "Camisas";
+  if (hasWord(text, ["vestido", "vestidos"])) return "Vestidos";
+  if (hasWord(text, ["conjunto", "conjuntos"])) return "Conjuntos";
+  if (hasAnyTerm(text, ["calca", "calcas", "pantalona", "legging", "jeans wide", "wide leg"]) || hasWord(text, ["jeans"])) return "Calças";
+  if (hasAnyTerm(text, ["short", "shorts", "bermuda", "bermudas"])) return "Shorts e bermudas";
+  if (hasWord(text, ["saia", "saias"])) return "Saias";
+  if (hasAnyTerm(text, ["calcado", "calcados", "tenis", "sandalia", "chinelo", "bota", "sapatilha", "sapato"])) return "Calçados";
+  if (category === "acessorios" || hasAnyTerm(text, ["acessorio", "acessorios", "bone", "bolsa", "cinto", "oculos", "relogio"])) return "Acessórios";
+
+  return "Outros";
+}
+
+function groupFilterToProductGroup(filter) {
+  return filter === "Gola Polo" ? "Camisetas gola polo" : filter;
+}
+
+function groupedAdminProducts(list) {
+  const groups = ADMIN_PRODUCT_GROUPS.map((name) => ({ name, products: [] }));
+  const byName = new Map(groups.map((group) => [group.name, group]));
+
+  [...list].forEach((product) => {
+    const groupName = adminProductGroup(product);
+    const group = byName.get(groupName) || byName.get("Outros");
+    group.products.push(product);
+  });
+
+  return groups.filter((group) => group.products.length);
 }
 
 function stockKey(label) {
@@ -602,12 +677,13 @@ function renderStats() {
 }
 
 function filteredProducts() {
-  const search = normalizeKey(adminSearch?.value || "");
+  const search = compactText(adminSearch?.value || "");
   const statusFilter = adminStatusFilter?.value || "Todos";
+  const groupFilter = groupFilterToProductGroup(activeAdminGroupFilter);
 
   return products.filter((product) => {
-    const haystack = normalizeKey(
-      [product.codigo, product.nome, product.categoria, product.subcategoria, product.cor, product.tecido].join(" ")
+    const haystack = compactText(
+      [product.codigo, product.nome, product.descricao, product.categoria, product.subcategoria, product.cor, product.tecido].join(" ")
     );
     const unavailable = isUnavailable(product);
     const matchesSearch = !search || haystack.includes(search);
@@ -618,8 +694,9 @@ function filteredProducts() {
       (statusFilter === "Esgotado" && unavailable) ||
       (statusFilter === "Promocao" && product.promocao) ||
       (statusFilter === "MaisVendidos" && (product.maisVendido || product.destaque));
+    const matchesGroup = activeAdminGroupFilter === "Todos" || adminProductGroup(product) === groupFilter;
 
-    return matchesSearch && matchesStatus;
+    return matchesSearch && matchesStatus && matchesGroup;
   });
 }
 
@@ -666,11 +743,35 @@ function productCard(product) {
   `;
 }
 
+function renderAdminGroupFilters() {
+  if (!adminGroupFilters) return;
+
+  adminGroupFilters.innerHTML = ADMIN_GROUP_FILTERS.map((filter) => {
+    const activeClass = filter === activeAdminGroupFilter ? " active" : "";
+    return `<button class="admin-group-filter${activeClass}" type="button" data-admin-group-filter="${escapeHtml(filter)}">${escapeHtml(filter)}</button>`;
+  }).join("");
+}
+
+function renderGroupedProductCards(list) {
+  return groupedAdminProducts(list)
+    .map(
+      (group) => `
+        <div class="admin-product-group-heading">
+          <span>${escapeHtml(group.name)}</span>
+          <small>${group.products.length} produto${group.products.length === 1 ? "" : "s"}</small>
+        </div>
+        ${group.products.map(productCard).join("")}
+      `
+    )
+    .join("");
+}
+
 function renderProducts() {
   renderStats();
+  renderAdminGroupFilters();
   const listedProducts = filteredProducts();
   productList.innerHTML = listedProducts.length
-    ? listedProducts.map(productCard).join("")
+    ? renderGroupedProductCards(listedProducts)
     : '<div class="empty-state">Nenhum produto encontrado para esse filtro.</div>';
 }
 
@@ -894,6 +995,12 @@ identityList?.addEventListener("click", handleIdentityAction);
 logoutButton.addEventListener("click", () => firebase.logout());
 adminSearch?.addEventListener("input", renderProducts);
 adminStatusFilter?.addEventListener("change", renderProducts);
+adminGroupFilters?.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-admin-group-filter]");
+  if (!button) return;
+  activeAdminGroupFilter = button.dataset.adminGroupFilter || "Todos";
+  renderProducts();
+});
 refreshProductsButton?.addEventListener("click", loadProducts);
 refreshIdentitiesButton?.addEventListener("click", loadIdentities);
 PHOTO_FIELDS.forEach(({ file }, index) => {

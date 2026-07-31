@@ -216,6 +216,115 @@ function matchesFilter(product, filter) {
   return product.categoria === filter;
 }
 
+const PRODUCT_DISPLAY_GROUPS = [
+  "Plus Size",
+  "Novidades",
+  "Camisetas gola polo",
+  "Camisetas e blusas",
+  "Camisas",
+  "Vestidos",
+  "Conjuntos",
+  "Calças",
+  "Shorts e bermudas",
+  "Saias",
+  "Calçados",
+  "Acessórios",
+  "Outros",
+];
+
+function normalizeProductText(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function productSearchText(product) {
+  return normalizeProductText(
+    [
+      product.nome,
+      product.descricao,
+      product.categoria,
+      product.subcategoria,
+      product.tamanhos,
+      product.codigo,
+    ].join(" ")
+  );
+}
+
+function hasAnyTerm(text, terms) {
+  return terms.some((term) => text.includes(term));
+}
+
+function hasWord(text, words) {
+  return words.some((word) => new RegExp(`(^|[^a-z0-9])${word}($|[^a-z0-9])`, "i").test(text));
+}
+
+function productDisplayGroup(product) {
+  const text = productSearchText(product);
+  const category = normalizeProductText(product.categoria);
+
+  if (hasAnyTerm(text, ["plus size", "tamanho especial", "tamanhos especiais", "curvy"]) || hasWord(text, ["plus", "g1", "g2", "g3", "g4", "g5"])) {
+    return "Plus Size";
+  }
+
+  if (product.maisVendido || product.destaque || category === "novidades") return "Novidades";
+
+  const isPolo = hasAnyTerm(text, ["gola polo", "camisa polo"]) || hasWord(text, ["polo"]);
+  if (isPolo) return "Camisetas gola polo";
+
+  if (hasAnyTerm(text, ["camiseta", "t shirt", "t-shirt", "baby look"]) || hasWord(text, ["blusa", "blusas", "regata", "cropped"])) {
+    return "Camisetas e blusas";
+  }
+
+  if (hasAnyTerm(text, ["camisa social", "camisa slim", "camisa manga", "camisa masculina", "camisa feminina"]) || hasWord(text, ["camisa", "camisas"])) {
+    return "Camisas";
+  }
+
+  if (hasWord(text, ["vestido", "vestidos"])) return "Vestidos";
+  if (hasWord(text, ["conjunto", "conjuntos"])) return "Conjuntos";
+  if (hasAnyTerm(text, ["calca", "calcas", "pantalona", "legging", "jeans wide", "wide leg"]) || hasWord(text, ["jeans"])) return "Calças";
+  if (hasAnyTerm(text, ["short", "shorts", "bermuda", "bermudas"])) return "Shorts e bermudas";
+  if (hasWord(text, ["saia", "saias"])) return "Saias";
+  if (hasAnyTerm(text, ["calcado", "calcados", "tenis", "sandalia", "chinelo", "bota", "sapatilha", "sapato"])) return "Calçados";
+  if (category === "acessorios" || hasAnyTerm(text, ["acessorio", "acessorios", "bone", "bolsa", "cinto", "oculos", "relogio"])) return "Acessórios";
+
+  return "Outros";
+}
+
+function groupedProducts(products) {
+  const groups = PRODUCT_DISPLAY_GROUPS.map((name) => ({ name, products: [] }));
+  const byName = new Map(groups.map((group) => [group.name, group]));
+
+  products.forEach((product) => {
+    const groupName = productDisplayGroup(product);
+    const group = byName.get(groupName) || byName.get("Outros");
+    group.products.push(product);
+  });
+
+  return groups.filter((group) => group.products.length);
+}
+
+function orderedProductsForDisplay(products) {
+  return groupedProducts([...products]).flatMap((group) => group.products);
+}
+
+function renderGroupedProductCards(products) {
+  return groupedProducts([...products])
+    .map(
+      (group) => `
+        <div class="product-group-heading">
+          <span>${escapeHtml(group.name)}</span>
+          <small>${group.products.length} produto${group.products.length === 1 ? "" : "s"}</small>
+        </div>
+        ${group.products.map(renderProductCard).join("")}
+      `
+    )
+    .join("");
+}
+
 function imageMarkup(src, alt) {
   const safeSrc = escapeHtml(src);
   const safeAlt = escapeHtml(alt);
@@ -474,19 +583,19 @@ function renderCatalog() {
   renderFilters();
   catalogFeedback.textContent = `${products.length} produto${products.length === 1 ? "" : "s"} encontrado${products.length === 1 ? "" : "s"}.`;
   catalogProducts.innerHTML = products.length
-    ? products.map(renderProductCard).join("")
+    ? renderGroupedProductCards(products)
     : '<div class="empty-state">Nenhum produto encontrado nesta categoria.</div>';
 }
 
 function renderFeaturedProducts() {
-  const products = visibleProducts.filter((product) => product.maisVendido || product.destaque).slice(0, 4);
+  const products = orderedProductsForDisplay(visibleProducts.filter((product) => product.maisVendido || product.destaque)).slice(0, 4);
   featuredProducts.innerHTML = products.length
     ? products.map(renderProductCard).join("")
     : '<div class="empty-state">Os mais vendidos aparecem aqui quando houver produtos em destaque.</div>';
 }
 
 function renderPromoProducts() {
-  const products = visibleProducts.filter((product) => product.promocao).slice(0, 4);
+  const products = orderedProductsForDisplay(visibleProducts.filter((product) => product.promocao)).slice(0, 4);
   promoProducts.innerHTML = products.length
     ? products.map(renderProductCard).join("")
     : '<div class="empty-state">As promoções aparecem aqui quando houver produtos com promoção marcada.</div>';
