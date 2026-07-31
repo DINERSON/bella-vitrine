@@ -47,6 +47,65 @@ function formatPrice(value) {
   return String(value).trim().startsWith("R$") ? value : `R$ ${value}`;
 }
 
+function parsePrice(value) {
+  if (typeof value === "number") return value > 0 ? value : null;
+  const raw = String(value || "").trim();
+  if (!raw) return null;
+  const clean = raw
+    .replace(/[^\d,.]/g, "")
+    .replace(/\.(?=\d{3}(?:\D|$))/g, "")
+    .replace(",", ".");
+  const parsed = Number(clean);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
+function formatCurrency(value) {
+  const price = parsePrice(value);
+  if (!price) return "";
+  return price.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  });
+}
+
+function productCurrentPrice(product) {
+  return product.preco ?? product.price ?? product.salePrice ?? product.promotionalPrice ?? "";
+}
+
+function productOldPrice(product) {
+  return product.precoAntigo ?? product.oldPrice ?? product.originalPrice ?? "";
+}
+
+function productSaleInfo(product) {
+  const current = parsePrice(productCurrentPrice(product));
+  const old = parsePrice(productOldPrice(product));
+  const hasSale = Boolean(current && old && old > current);
+
+  return {
+    current,
+    old,
+    hasSale,
+    discount: hasSale ? Math.round((1 - current / old) * 100) : 0,
+    currentFormatted: current ? formatCurrency(current) : formatPrice(productCurrentPrice(product)),
+    oldFormatted: old ? formatCurrency(old) : "",
+  };
+}
+
+function renderPriceBlock(product, className = "price-row") {
+  const sale = productSaleInfo(product);
+  if (!sale.hasSale) {
+    return `<div class="${className}"><strong>${escapeHtml(sale.currentFormatted)}</strong></div>`;
+  }
+
+  return `
+    <div class="${className} has-discount">
+      <span class="old-price">${escapeHtml(sale.oldFormatted)}</span>
+      <strong>${escapeHtml(sale.currentFormatted)}</strong>
+      <span class="discount-badge">${sale.discount}% OFF</span>
+    </div>
+  `;
+}
+
 function escapeHtml(value) {
   return String(value || "")
     .replace(/&/g, "&amp;")
@@ -102,14 +161,19 @@ function productStatusLabel(product) {
 }
 
 function productMessage(product, selectedSize = "") {
+  const sale = productSaleInfo(product);
+  const saleText = sale.hasSale
+    ? ` Valor promocional: ${sale.currentFormatted} (de ${sale.oldFormatted}, ${sale.discount}% OFF).`
+    : "";
+
   if (selectedSize) {
-    return `Olá, tenho interesse no produto ${product.codigo} - ${product.nome}, tamanho/número ${selectedSize}. Está disponível?`;
+    return `Olá, tenho interesse no produto ${product.codigo} - ${product.nome}, tamanho/número ${selectedSize}. Está disponível?${saleText}`;
   }
 
   return replaceVars(STORE_CONFIG.whatsappProductMessage, {
     codigo: product.codigo,
     nome: product.nome,
-  });
+  }) + saleText;
 }
 
 function productCardId(product) {
@@ -208,7 +272,7 @@ function cleanLogoInitials(value) {
 function matchesFilter(product, filter) {
   if (filter === "Todos") return true;
   if (filter === "Mais Vendidos") return Boolean(product.maisVendido || product.destaque);
-  if (filter === "Promoções") return Boolean(product.promocao);
+  if (filter === "Promoções") return productSaleInfo(product).hasSale;
   if (filter === "Oversized") {
     return product.categoria === "Oversized" || product.subcategoria === "Oversized" || /oversized/i.test(product.nome || "");
   }
@@ -398,9 +462,8 @@ function renderProductModal(product) {
   const mainImage = images[0] || "";
   const statusLabel = productStatusLabel(product);
   const hasSizes = normalizeSizes(product).length > 0;
-  const price = product.promocao
-    ? `<div class="modal-price"><span class="old-price">${formatPrice(product.precoAntigo)}</span><strong>${formatPrice(product.preco)}</strong></div>`
-    : `<div class="modal-price"><strong>${formatPrice(product.preco)}</strong></div>`;
+  const sale = productSaleInfo(product);
+  const price = renderPriceBlock(product, "modal-price");
   const action = sold
     ? `<button class="btn btn-disabled modal-buy" type="button" disabled>Indisponível</button>`
     : hasSizes
@@ -415,7 +478,7 @@ function renderProductModal(product) {
       </div>
       <div class="product-modal-details">
         <div class="product-modal-badges">
-          ${product.promocao ? '<span class="badge-inline badge-promo-inline">Promoção</span>' : ""}
+          ${sale.hasSale ? '<span class="badge-inline badge-promo-inline">Promoção</span>' : ""}
           <span class="badge-inline ${sold ? "badge-sold-inline" : "badge-available-inline"}">${escapeHtml(statusLabel)}</span>
         </div>
         <span class="product-code">${escapeHtml(product.codigo)}</span>
@@ -467,9 +530,8 @@ function renderProductCard(product) {
   const statusLabel = productStatusLabel(product);
   const primaryImage = primaryProductImage(product);
   const summerBadge = product.categoria === "Moda Verão" ? '<span class="badge badge-summer">Verão</span>' : "";
-  const price = product.promocao
-    ? `<div class="price-row"><span class="old-price">${formatPrice(product.precoAntigo)}</span><strong>${formatPrice(product.preco)}</strong></div>`
-    : `<div class="price-row"><strong>${formatPrice(product.preco)}</strong></div>`;
+  const sale = productSaleInfo(product);
+  const price = renderPriceBlock(product);
   const action = sold
     ? `<button class="btn product-buy btn-disabled" type="button" disabled aria-label="Produto indisponível ${escapeHtml(product.codigo)} - ${escapeHtml(product.nome)}">Indisponível</button>`
     : hasSizes
@@ -481,7 +543,7 @@ function renderProductCard(product) {
       <div class="product-image">
         ${imageMarkup(primaryImage, product.nome)}
         ${sold ? '<span class="sold-overlay">Esgotado</span>' : ""}
-        ${product.promocao ? '<span class="badge badge-promo">Promoção</span>' : summerBadge}
+        ${sale.hasSale ? '<span class="badge badge-promo">Promoção</span>' : summerBadge}
         <span class="badge badge-status ${sold ? "sold" : "available"}">${escapeHtml(statusLabel)}</span>
       </div>
       <div class="product-info">
@@ -595,7 +657,7 @@ function renderFeaturedProducts() {
 }
 
 function renderPromoProducts() {
-  const products = orderedProductsForDisplay(visibleProducts.filter((product) => product.promocao)).slice(0, 4);
+  const products = orderedProductsForDisplay(visibleProducts.filter((product) => productSaleInfo(product).hasSale)).slice(0, 4);
   promoProducts.innerHTML = products.length
     ? products.map(renderProductCard).join("")
     : '<div class="empty-state">As promoções aparecem aqui quando houver produtos com promoção marcada.</div>';

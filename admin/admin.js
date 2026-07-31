@@ -228,6 +228,62 @@ function formatPrice(value) {
   return String(value).trim().startsWith("R$") ? value : `R$ ${value}`;
 }
 
+function parsePrice(value) {
+  if (typeof value === "number") return value > 0 ? value : null;
+  const raw = String(value || "").trim();
+  if (!raw) return null;
+  const clean = raw
+    .replace(/[^\d,.]/g, "")
+    .replace(/\.(?=\d{3}(?:\D|$))/g, "")
+    .replace(",", ".");
+  const parsed = Number(clean);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
+function normalizePriceInput(value) {
+  const price = parsePrice(value);
+  return price ? price.toFixed(2).replace(".", ",") : "";
+}
+
+function productSaleInfo(product) {
+  const current = parsePrice(product.preco ?? product.price ?? product.salePrice ?? product.promotionalPrice ?? "");
+  const old = parsePrice(product.precoAntigo ?? product.oldPrice ?? product.originalPrice ?? "");
+  const hasSale = Boolean(current && old && old > current);
+
+  return {
+    current,
+    old,
+    hasSale,
+    discount: hasSale ? Math.round((1 - current / old) * 100) : 0,
+  };
+}
+
+function validateProductPrices(data) {
+  const currentRaw = String(data.get("preco") || "").trim();
+  const oldRaw = String(data.get("precoAntigo") || "").trim();
+  const current = parsePrice(currentRaw);
+  const old = parsePrice(oldRaw);
+
+  if (!current) {
+    return { valid: false, message: "Informe um preço atual válido maior que zero." };
+  }
+
+  if (oldRaw && !old) {
+    return { valid: false, message: "Informe um preço antigo válido maior que zero ou deixe o campo vazio." };
+  }
+
+  if (old && old <= current) {
+    return { valid: false, message: "O preço antigo precisa ser maior que o preço atual." };
+  }
+
+  return {
+    valid: true,
+    preco: normalizePriceInput(current),
+    precoAntigo: old ? normalizePriceInput(old) : "",
+    promocao: Boolean(old && old > current),
+  };
+}
+
 function escapeHtml(value) {
   return String(value || "")
     .replace(/&/g, "&amp;")
@@ -586,6 +642,7 @@ async function loadIdentities() {
 
 function productFromForm() {
   const data = new FormData(productForm);
+  const priceValidation = validateProductPrices(data);
   const imagens = imagesFromForm();
   const sizeType = normalizeSizeType(data.get("sizeType"));
   const tamanhos = sizesFromForm(data, sizeType);
@@ -600,13 +657,13 @@ function productFromForm() {
     sizesStock: sizesStockFromSizes(tamanhos),
     cor: data.get("cor").trim(),
     tecido: data.get("tecido").trim(),
-    preco: data.get("preco").trim(),
-    precoAntigo: data.get("precoAntigo").trim(),
+    preco: priceValidation.preco,
+    precoAntigo: priceValidation.precoAntigo,
     descricao: data.get("descricao").trim(),
     status: data.get("status"),
     destaque: data.get("destaque") === "on" || data.get("maisVendido") === "on",
     maisVendido: data.get("maisVendido") === "on",
-    promocao: data.get("promocao") === "on",
+    promocao: priceValidation.promocao,
     imagem: imagens.find(Boolean) || "",
     imagens,
   };
@@ -657,13 +714,13 @@ function fillForm(product) {
   fillStockFields(product);
   productForm.elements.cor.value = product.cor || "";
   productForm.elements.tecido.value = product.tecido || "";
-  productForm.elements.preco.value = product.preco || "";
-  productForm.elements.precoAntigo.value = product.precoAntigo || "";
+  productForm.elements.preco.value = product.preco || product.price || product.salePrice || product.promotionalPrice || "";
+  productForm.elements.precoAntigo.value = product.precoAntigo || product.oldPrice || product.originalPrice || "";
   productForm.elements.descricao.value = product.descricao || "";
   productForm.elements.status.value = product.status || "Disponível";
   productForm.elements.destaque.checked = Boolean(product.destaque);
   productForm.elements.maisVendido.checked = Boolean(product.maisVendido || product.destaque);
-  productForm.elements.promocao.checked = Boolean(product.promocao);
+  productForm.elements.promocao.checked = productSaleInfo(product).hasSale;
   formTitle.textContent = `Editar ${product.codigo}`;
   renderImagePreview();
   productForm.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -673,7 +730,7 @@ function renderStats() {
   document.querySelector("#stat-total").textContent = products.length;
   document.querySelector("#stat-available").textContent = products.filter((item) => !isUnavailable(item)).length;
   document.querySelector("#stat-sold").textContent = products.filter(isUnavailable).length;
-  document.querySelector("#stat-promo").textContent = products.filter((item) => item.promocao).length;
+  document.querySelector("#stat-promo").textContent = products.filter((item) => productSaleInfo(item).hasSale).length;
 }
 
 function filteredProducts() {
@@ -692,7 +749,7 @@ function filteredProducts() {
       (statusFilter === "Disponivel" && !unavailable) ||
       (statusFilter === "Vendido" && String(product.status || "").toLowerCase() === "vendido") ||
       (statusFilter === "Esgotado" && unavailable) ||
-      (statusFilter === "Promocao" && product.promocao) ||
+      (statusFilter === "Promocao" && productSaleInfo(product).hasSale) ||
       (statusFilter === "MaisVendidos" && (product.maisVendido || product.destaque));
     const matchesGroup = activeAdminGroupFilter === "Todos" || adminProductGroup(product) === groupFilter;
 
@@ -729,8 +786,8 @@ function productCard(product) {
       <div class="admin-product-info">
         <span>${escapeHtml(product.codigo)} · ${escapeHtml(product.categoria)}${product.subcategoria ? ` · ${escapeHtml(product.subcategoria)}` : ""}</span>
         <h3>${escapeHtml(product.nome)}</h3>
-        <p>${formatPrice(product.preco)} ${product.promocao && product.precoAntigo ? `<del>${formatPrice(product.precoAntigo)}</del>` : ""}</p>
-        <small>Status: ${escapeHtml(isUnavailable(product) ? "Esgotado" : product.status)}${product.destaque ? " · Mais Vendidos" : ""}${product.promocao ? " · Promoção" : ""}</small>
+        <p>${formatPrice(product.preco || product.price || product.salePrice || product.promotionalPrice)} ${productSaleInfo(product).hasSale ? `<del>${formatPrice(product.precoAntigo || product.oldPrice || product.originalPrice)}</del>` : ""}</p>
+        <small>Status: ${escapeHtml(isUnavailable(product) ? "Esgotado" : product.status)}${product.destaque ? " · Mais Vendidos" : ""}${productSaleInfo(product).hasSale ? " · Promoção" : ""}</small>
         <small>Estoque: ${escapeHtml(sizesSummary(product))}</small>
         <small>Fotos: ${images.length}</small>
       </div>
@@ -818,6 +875,13 @@ async function handleLogin(event) {
 
 async function handleSaveProduct(event) {
   event.preventDefault();
+  const data = new FormData(productForm);
+  const priceValidation = validateProductPrices(data);
+  if (!priceValidation.valid) {
+    setMessage(formMessage, priceValidation.message, "error");
+    return;
+  }
+
   const product = productFromForm();
   const imageFiles = imageFilesFromForm();
   const existingId = product.firestoreId || null;

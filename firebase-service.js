@@ -112,14 +112,14 @@ function normalizeProduct(docSnapshot) {
     sizesStock: data.sizesStock || data.tamanhos || {},
     cor: data.cor || "",
     tecido: data.tecido || "",
-    preco: data.preco || "",
-    precoAntigo: data.precoAntigo || "",
+    preco: data.preco || data.price || data.salePrice || data.promotionalPrice || "",
+    precoAntigo: data.precoAntigo || data.oldPrice || data.originalPrice || "",
     imagem: data.imagem || "",
     imagens: Array.isArray(data.imagens) ? data.imagens : [],
     status: data.status || "Disponível",
     destaque: Boolean(data.destaque),
     maisVendido: Boolean(data.maisVendido || data.destaque),
-    promocao: Boolean(data.promocao),
+    promocao: Boolean(data.promocao || (data.precoAntigo || data.oldPrice || data.originalPrice)),
     descricao: data.descricao || "",
   };
 }
