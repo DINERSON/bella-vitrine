@@ -267,7 +267,10 @@ function cleanHeroTitle(value) {
 
 function cleanHeroSubtitle(value) {
   const text = String(value || "").trim();
-  const normalized = normalizeText(text);
+  const normalized = text
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
   const oldLongCopy =
     normalized.includes("moda masculina") &&
     normalized.includes("feminina") &&
