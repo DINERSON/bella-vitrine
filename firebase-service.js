@@ -95,6 +95,15 @@ function normalizeStoreConfig(data = {}) {
     whatsappDefaultMessage: data.whatsappDefaultMessage || "",
     heroTitle: data.heroTitle || "",
     heroSubtitle: data.heroSubtitle || "",
+    heroButtonText: data.heroButtonText || "",
+    heroButtonTarget: data.heroButtonTarget || "",
+    heroImageDesktop: data.heroImageDesktop || data.heroImage || "",
+    heroImageMobile: data.heroImageMobile || "",
+    heroImagePosition: data.heroImagePosition || "center",
+    heroTextAlign: data.heroTextAlign || "left",
+    heroShowText: data.heroShowText === true,
+    heroShowButton: data.heroShowButton === true,
+    heroEnabled: data.heroEnabled !== false,
   };
 }
 
@@ -268,6 +277,47 @@ async function uploadIdentityImage(imageFile, identityTitle) {
   }
 }
 
+async function uploadHomeBannerImage(imageFile, slot) {
+  const file = imageFile?.file || imageFile;
+  if (!file) return "";
+
+  const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+  const maxSize = 5 * 1024 * 1024;
+  if (file.type && !allowedTypes.includes(file.type)) {
+    const error = new Error("UPLOAD_ERROR");
+    error.uploadError = true;
+    throw error;
+  }
+  if (file.size && file.size > maxSize) {
+    const error = new Error("UPLOAD_ERROR");
+    error.uploadError = true;
+    error.sizeError = true;
+    throw error;
+  }
+
+  const timestamp = Date.now();
+  const safeSlot = safeFileNamePart(slot || "banner", "banner");
+  const extensionByType = {
+    "image/jpeg": "jpg",
+    "image/png": "png",
+    "image/webp": "webp",
+  };
+  const extension = extensionByType[file.type] || "jpg";
+  const imageRef = firebaseModules.ref(storage, `banners/home/${safeSlot}-${timestamp}.${extension}`);
+
+  try {
+    await firebaseModules.uploadBytes(imageRef, file, {
+      contentType: file.type || "image/jpeg",
+    });
+    return firebaseModules.getDownloadURL(imageRef);
+  } catch (error) {
+    const uploadError = new Error("UPLOAD_ERROR");
+    uploadError.uploadError = true;
+    uploadError.cause = error;
+    throw uploadError;
+  }
+}
+
 async function fetchStoreConfig() {
   if (!configured) return null;
   await ensureFirebase();
@@ -275,12 +325,18 @@ async function fetchStoreConfig() {
   return snapshot.exists() ? normalizeStoreConfig(snapshot.data()) : null;
 }
 
-async function saveStoreConfig(storeConfig) {
+async function saveStoreConfig(storeConfig, bannerFiles = {}) {
   await ensureFirebase();
+  const desktopImage = await uploadHomeBannerImage(bannerFiles.desktop, "desktop");
+  const mobileImage = await uploadHomeBannerImage(bannerFiles.mobile, "mobile");
+  const normalizedConfig = normalizeStoreConfig(storeConfig);
+  if (desktopImage) normalizedConfig.heroImageDesktop = desktopImage;
+  if (mobileImage) normalizedConfig.heroImageMobile = mobileImage;
+
   await firebaseModules.setDoc(
     storeConfigDoc(),
     {
-      ...normalizeStoreConfig(storeConfig),
+      ...normalizedConfig,
       updatedAt: firebaseModules.serverTimestamp(),
     },
     { merge: true }

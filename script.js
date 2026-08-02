@@ -28,6 +28,7 @@ let activeFilter = "Todos";
 let visibleProducts = [...PRODUCTS];
 let visibleLooks = [...LOOKS];
 let menuReady = false;
+let heroImageWatcherReady = false;
 
 function setText(selector, text) {
   const element = document.querySelector(selector);
@@ -264,9 +265,56 @@ function cleanHeroTitle(value) {
     : "Estilo que combina com você";
 }
 
+function cleanHeroSubtitle(value) {
+  const text = String(value || "").trim();
+  const normalized = normalizeText(text);
+  const oldLongCopy =
+    normalized.includes("moda masculina") &&
+    normalized.includes("feminina") &&
+    normalized.includes("verao");
+  return !text || oldLongCopy ? "Moda para todos os momentos." : text;
+}
+
 function cleanLogoInitials(value) {
   const text = String(value || "").trim().toUpperCase();
   return text === "PV" || text === "VP" ? "VM" : text;
+}
+
+function normalizeHeroTarget(target) {
+  const allowedTargets = ["#novidades", "#catalogo", "#promocoes", "#looks", "#contato"];
+  return allowedTargets.includes(target) ? target : "#novidades";
+}
+
+function updateHeroImage() {
+  const heroImage = document.querySelector("#hero-image");
+  const heroMedia = document.querySelector(".hero-media");
+  if (!heroImage || !heroMedia) return;
+
+  const desktopImage = SITE_CONTENT.hero.imageDesktop || SITE_CONTENT.hero.image || "";
+  const mobileImage = SITE_CONTENT.hero.imageMobile || "";
+  const useMobile = window.matchMedia("(max-width: 700px)").matches;
+  const nextImage = useMobile && mobileImage ? mobileImage : desktopImage;
+
+  heroMedia.classList.toggle("hero-no-image", !nextImage);
+  if (nextImage) {
+    heroImage.src = nextImage;
+    heroImage.alt = SITE_CONTENT.hero.imageAlt || "Banner promocional Vitrine Moda";
+    heroImage.hidden = false;
+    heroImage.style.objectPosition = SITE_CONTENT.hero.imagePosition || "center";
+    heroImage.onerror = function () {
+      this.closest(".hero-media").classList.add("hero-no-image");
+      this.hidden = true;
+    };
+  } else {
+    heroImage.removeAttribute("src");
+    heroImage.hidden = true;
+  }
+}
+
+function setupHeroImageWatcher() {
+  if (heroImageWatcherReady) return;
+  heroImageWatcherReady = true;
+  window.addEventListener("resize", updateHeroImage);
 }
 
 function matchesFilter(product, filter) {
@@ -730,7 +778,16 @@ function applyRemoteStoreConfig(remoteConfig) {
 
   if (remoteConfig.heroTitle) SITE_CONTENT.hero.title = cleanHeroTitle(remoteConfig.heroTitle);
   if (remoteConfig.slogan) SITE_CONTENT.hero.slogan = remoteConfig.slogan;
-  if (remoteConfig.heroSubtitle) SITE_CONTENT.hero.subtitle = remoteConfig.heroSubtitle;
+  if (remoteConfig.heroSubtitle) SITE_CONTENT.hero.subtitle = cleanHeroSubtitle(remoteConfig.heroSubtitle);
+  if (remoteConfig.heroButtonText) SITE_CONTENT.hero.buttonText = remoteConfig.heroButtonText;
+  if (remoteConfig.heroButtonTarget) SITE_CONTENT.hero.buttonTarget = normalizeHeroTarget(remoteConfig.heroButtonTarget);
+  SITE_CONTENT.hero.imageDesktop = remoteConfig.heroImageDesktop || SITE_CONTENT.hero.imageDesktop || "";
+  SITE_CONTENT.hero.imageMobile = remoteConfig.heroImageMobile || SITE_CONTENT.hero.imageMobile || "";
+  SITE_CONTENT.hero.imagePosition = remoteConfig.heroImagePosition || SITE_CONTENT.hero.imagePosition || "center";
+  SITE_CONTENT.hero.textAlign = remoteConfig.heroTextAlign || SITE_CONTENT.hero.textAlign || "left";
+  SITE_CONTENT.hero.showText = remoteConfig.heroShowText === true;
+  SITE_CONTENT.hero.showButton = remoteConfig.heroShowButton === true;
+  SITE_CONTENT.hero.enabled = remoteConfig.heroEnabled !== false;
   SITE_CONTENT.footer.text = `${STORE_CONFIG.storeName}: moda feminina, masculina e verao com compra rapida pelo WhatsApp.`;
 }
 
@@ -759,25 +816,45 @@ function applyStoreConfig() {
     link.textContent = SITE_CONTENT.buttons.whatsapp;
   });
 
-  setText("#hero-eyebrow", SITE_CONTENT.hero.eyebrow);
-  setText("#hero-title", cleanHeroTitle(SITE_CONTENT.hero.title));
-  setText("#hero-slogan", SITE_CONTENT.hero.slogan || STORE_CONFIG.slogan);
-  setText("#hero-subtitle", SITE_CONTENT.hero.subtitle);
-  setText("#hero-catalog-button", SITE_CONTENT.buttons.viewCatalog);
+  const heroSection = document.querySelector(".hero");
+  const heroMedia = document.querySelector(".hero-media");
+  const heroOverlay = document.querySelector(".hero-overlay");
+  const heroEyebrow = document.querySelector("#hero-eyebrow");
+  const heroSlogan = document.querySelector("#hero-slogan");
+  const heroButton = document.querySelector("#hero-catalog-button");
+  const showHeroText = SITE_CONTENT.hero.showText === true;
+  const showHeroButton = SITE_CONTENT.hero.showButton === true;
 
-  const heroImage = document.querySelector("#hero-image");
-  if (SITE_CONTENT.hero.image) {
-    heroImage.src = SITE_CONTENT.hero.image;
-    heroImage.alt = SITE_CONTENT.hero.imageAlt;
-    heroImage.hidden = false;
-    heroImage.onerror = function () {
-      this.closest(".hero-media").classList.add("hero-no-image");
-      this.hidden = true;
-    };
-  } else {
-    heroImage.hidden = true;
-    heroImage.closest(".hero-media").classList.add("hero-no-image");
+  if (heroSection) heroSection.hidden = SITE_CONTENT.hero.enabled === false;
+  if (heroMedia) {
+    heroMedia.dataset.textAlign = SITE_CONTENT.hero.textAlign || "left";
+    heroMedia.dataset.imagePosition = SITE_CONTENT.hero.imagePosition || "center";
+    heroMedia.classList.toggle("hero-text-hidden", !showHeroText);
+    heroMedia.classList.toggle("hero-button-only", !showHeroText && showHeroButton);
   }
+  if (heroOverlay) heroOverlay.hidden = !showHeroText && !showHeroButton;
+  if (heroEyebrow) {
+    heroEyebrow.textContent = SITE_CONTENT.hero.eyebrow || "";
+    heroEyebrow.hidden = !SITE_CONTENT.hero.eyebrow;
+  }
+  if (heroSlogan) {
+    heroSlogan.textContent = "";
+    heroSlogan.hidden = true;
+  }
+  if (!showHeroText) {
+    setText("#hero-title", "");
+    setText("#hero-subtitle", "");
+  } else {
+    setText("#hero-title", cleanHeroTitle(SITE_CONTENT.hero.title));
+    setText("#hero-subtitle", SITE_CONTENT.hero.subtitle);
+  }
+  if (heroButton) {
+    heroButton.textContent = SITE_CONTENT.hero.buttonText || SITE_CONTENT.buttons.viewCatalog;
+    heroButton.href = normalizeHeroTarget(SITE_CONTENT.hero.buttonTarget || "#novidades");
+    heroButton.hidden = !showHeroButton;
+  }
+  updateHeroImage();
+  setupHeroImageWatcher();
 
   setText("#news-eyebrow", SITE_CONTENT.sections.newsEyebrow);
   setText("#novidades-title", SITE_CONTENT.sections.newsTitle);

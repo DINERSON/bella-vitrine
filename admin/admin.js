@@ -14,6 +14,7 @@ const categorySelect = document.querySelector("#category-select");
 const storeConfigForm = document.querySelector("#store-config-form");
 const storeConfigMessage = document.querySelector("#store-config-message");
 const saveStoreConfigButton = document.querySelector("#save-store-config");
+const bannerPreviewGrid = document.querySelector("#banner-preview-grid");
 const adminSearch = document.querySelector("#admin-search");
 const adminStatusFilter = document.querySelector("#admin-status-filter");
 const adminGroupFilters = document.querySelector("#admin-group-filters");
@@ -36,6 +37,8 @@ let currentProductImages = ["", "", "", ""];
 const removedProductPhotoSlots = new Set();
 let currentIdentityImage = "";
 let identityImageRemoved = false;
+let currentHeroImageDesktop = "";
+let currentHeroImageMobile = "";
 let activeAdminGroupFilter = "Todos";
 
 const STOCK_FIELDS = [
@@ -337,6 +340,15 @@ function defaultStoreConfig() {
     whatsappDefaultMessage: STORE_CONFIG.whatsappDefaultMessage || "",
     heroTitle: SITE_CONTENT.hero.title || STORE_CONFIG.storeName || "",
     heroSubtitle: SITE_CONTENT.hero.subtitle || "",
+    heroButtonText: SITE_CONTENT.hero.buttonText || SITE_CONTENT.buttons.viewCatalog || "VER NOVIDADES",
+    heroButtonTarget: SITE_CONTENT.hero.buttonTarget || "#novidades",
+    heroImagePosition: SITE_CONTENT.hero.imagePosition || "center",
+    heroTextAlign: SITE_CONTENT.hero.textAlign || "left",
+    heroShowText: SITE_CONTENT.hero.showText === false ? "false" : "true",
+    heroShowButton: SITE_CONTENT.hero.showButton === true ? "true" : "false",
+    heroEnabled: SITE_CONTENT.hero.enabled === false ? "false" : "true",
+    heroImageDesktop: SITE_CONTENT.hero.imageDesktop || SITE_CONTENT.hero.image || "",
+    heroImageMobile: SITE_CONTENT.hero.imageMobile || "",
   };
 }
 
@@ -352,11 +364,14 @@ function fillStoreConfigForm(config = {}) {
   merged.storeName = cleanBrandText(merged.storeName);
   merged.heroTitle = cleanBrandText(merged.heroTitle);
   merged.slogan = merged.slogan || "Moda que realça você";
+  currentHeroImageDesktop = merged.heroImageDesktop || "";
+  currentHeroImageMobile = merged.heroImageMobile || "";
   Object.entries(merged).forEach(([field, value]) => {
     if (storeConfigForm.elements[field]) {
       storeConfigForm.elements[field].value = value || "";
     }
   });
+  renderBannerPreview();
 }
 
 function storeConfigFromForm() {
@@ -377,7 +392,74 @@ function storeConfigFromForm() {
     whatsappDefaultMessage: String(data.get("whatsappDefaultMessage") || "").trim(),
     heroTitle: String(data.get("heroTitle") || "").trim(),
     heroSubtitle: String(data.get("heroSubtitle") || "").trim(),
+    heroButtonText: String(data.get("heroButtonText") || "").trim(),
+    heroButtonTarget: String(data.get("heroButtonTarget") || "").trim(),
+    heroImageDesktop: currentHeroImageDesktop,
+    heroImageMobile: currentHeroImageMobile,
+    heroImagePosition: String(data.get("heroImagePosition") || "center").trim(),
+    heroTextAlign: String(data.get("heroTextAlign") || "left").trim(),
+    heroShowText: data.get("heroShowText") !== "false",
+    heroShowButton: data.get("heroShowButton") === "true",
+    heroEnabled: data.get("heroEnabled") !== "false",
   };
+}
+
+function bannerFileFromForm(fieldName) {
+  return storeConfigForm?.elements[fieldName]?.files?.[0] || null;
+}
+
+function validateBannerFile(file) {
+  if (!file) return "";
+  const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+  const maxSize = 5 * 1024 * 1024;
+  if (!allowedTypes.includes(file.type)) return "Use uma imagem PNG, JPEG ou WebP.";
+  if (file.size > maxSize) return "A imagem do banner deve ter no máximo 5 MB.";
+  return "";
+}
+
+function bannerFilesFromForm() {
+  return {
+    desktop: bannerFileFromForm("heroImageDesktopFile"),
+    mobile: bannerFileFromForm("heroImageMobileFile"),
+  };
+}
+
+function renderBannerPreview() {
+  if (!bannerPreviewGrid || !storeConfigForm) return;
+
+  const desktopFile = bannerFileFromForm("heroImageDesktopFile");
+  const mobileFile = bannerFileFromForm("heroImageMobileFile");
+  const previews = [
+    {
+      label: "Banner computador",
+      image: desktopFile ? URL.createObjectURL(desktopFile) : currentHeroImageDesktop,
+      ratio: "1920 x 700",
+    },
+    {
+      label: "Banner celular",
+      image: mobileFile ? URL.createObjectURL(mobileFile) : currentHeroImageMobile,
+      ratio: "1080 x 1350",
+    },
+  ];
+
+  bannerPreviewGrid.innerHTML = previews
+    .map(({ label, image, ratio }) => {
+      if (!image) {
+        return `
+          <div class="image-preview-card missing">
+            <span>${escapeHtml(label)}<br>${escapeHtml(ratio)}</span>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="image-preview-card">
+          <img src="${escapeHtml(image)}" alt="Prévia - ${escapeHtml(label)}" onerror="this.closest('.image-preview-card').classList.add('missing'); this.remove();">
+          <span>${escapeHtml(label)}</span>
+        </div>
+      `;
+    })
+    .join("");
 }
 
 function isUnavailable(product) {
@@ -919,15 +1001,26 @@ async function handleSaveStoreConfig(event) {
     return;
   }
 
-  setMessage(storeConfigMessage, "Salvando configuracoes...");
+  const bannerFiles = bannerFilesFromForm();
+  const desktopError = validateBannerFile(bannerFiles.desktop);
+  const mobileError = validateBannerFile(bannerFiles.mobile);
+  if (desktopError || mobileError) {
+    setMessage(storeConfigMessage, desktopError || mobileError, "error");
+    return;
+  }
+
+  setMessage(storeConfigMessage, bannerFiles.desktop || bannerFiles.mobile ? "Enviando banner..." : "Salvando configuracoes...");
   saveStoreConfigButton.disabled = true;
 
   try {
-    await firebase.saveStoreConfig(storeConfigFromForm());
+    await firebase.saveStoreConfig(storeConfigFromForm(), bannerFiles);
+    if (storeConfigForm.elements.heroImageDesktopFile) storeConfigForm.elements.heroImageDesktopFile.value = "";
+    if (storeConfigForm.elements.heroImageMobileFile) storeConfigForm.elements.heroImageMobileFile.value = "";
     setMessage(storeConfigMessage, "Configuracoes salvas. A vitrine publica sera atualizada automaticamente.", "success");
     await loadStoreConfig();
   } catch (error) {
-    setMessage(storeConfigMessage, "Nao foi possivel salvar as configuracoes. Tente novamente.", "error");
+    const uploadFailed = error?.message === "UPLOAD_ERROR" || error?.uploadError;
+    setMessage(storeConfigMessage, uploadFailed ? "Erro ao enviar banner. Tente novamente." : "Nao foi possivel salvar as configuracoes. Tente novamente.", "error");
   } finally {
     saveStoreConfigButton.disabled = false;
   }
@@ -1067,6 +1160,8 @@ adminGroupFilters?.addEventListener("click", (event) => {
 });
 refreshProductsButton?.addEventListener("click", loadProducts);
 refreshIdentitiesButton?.addEventListener("click", loadIdentities);
+storeConfigForm.elements.heroImageDesktopFile?.addEventListener("change", renderBannerPreview);
+storeConfigForm.elements.heroImageMobileFile?.addEventListener("change", renderBannerPreview);
 PHOTO_FIELDS.forEach(({ file }, index) => {
   productForm.elements[file]?.addEventListener("change", () => {
     if (productForm.elements[file]?.files?.[0]) {
@@ -1103,4 +1198,5 @@ if (isFirebaseReady()) {
 loadStoreConfig();
 renderImagePreview();
 renderIdentityImagePreview();
+renderBannerPreview();
 renderStockGrid("roupas");

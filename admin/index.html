@@ -135,8 +135,72 @@
             </label>
             <label>
               Subtitulo do banner
-              <input name="heroSubtitle" placeholder="Moda masculina, feminina e verao em uma vitrine moderna." />
+              <input name="heroSubtitle" placeholder="Moda para todos os momentos." />
             </label>
+            <fieldset class="banner-fieldset full-field">
+              <legend>Banner da pagina inicial</legend>
+              <p class="admin-muted">Envie o banner principal da home. Recomendado: 1920x700 para computador e 1080x1350 para celular.</p>
+              <label>
+                Imagem para computador
+                <input name="heroImageDesktopFile" type="file" accept="image/png,image/jpeg,image/webp" />
+              </label>
+              <label>
+                Imagem para celular (opcional)
+                <input name="heroImageMobileFile" type="file" accept="image/png,image/jpeg,image/webp" />
+              </label>
+              <label>
+                Texto do botao
+                <input name="heroButtonText" placeholder="VER NOVIDADES" />
+              </label>
+              <label>
+                Destino do botao
+                <select name="heroButtonTarget">
+                  <option value="#novidades">Novidades</option>
+                  <option value="#catalogo">Catalogo</option>
+                  <option value="#promocoes">Promocoes</option>
+                  <option value="#looks">Identidades da Loja</option>
+                  <option value="#contato">Contato</option>
+                </select>
+              </label>
+              <label>
+                Texto sobre a imagem
+                <select name="heroShowText">
+                  <option value="true">Ativo</option>
+                  <option value="false">Inativo</option>
+                </select>
+              </label>
+              <label>
+                Botao sobre a imagem
+                <select name="heroShowButton">
+                  <option value="false">Inativo</option>
+                  <option value="true">Ativo</option>
+                </select>
+              </label>
+              <label>
+                Banner
+                <select name="heroEnabled">
+                  <option value="true">Ativo</option>
+                  <option value="false">Inativo</option>
+                </select>
+              </label>
+              <label>
+                Alinhamento do texto
+                <select name="heroTextAlign">
+                  <option value="left">Esquerda</option>
+                  <option value="center">Centro</option>
+                  <option value="right">Direita</option>
+                </select>
+              </label>
+              <label>
+                Posicao da imagem
+                <select name="heroImagePosition">
+                  <option value="left">Esquerda</option>
+                  <option value="center">Centro</option>
+                  <option value="right">Direita</option>
+                </select>
+              </label>
+              <div class="image-preview-grid banner-preview full-field" id="banner-preview-grid" aria-label="Previa do banner"></div>
+            </fieldset>
             <button class="btn btn-primary full-field" type="submit" id="save-store-config">Salvar configuracoes</button>
             <p class="form-message full-field" id="store-config-message" aria-live="polite"></p>
           </form>

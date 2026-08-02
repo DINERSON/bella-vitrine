@@ -3033,18 +3033,6 @@ body:not(.admin-body) .hero-overlay > p:not(.eyebrow) {
   text-shadow: none;
 }
 
-body:not(.admin-body) .hero-actions .btn-whatsapp {
-  border: 1px solid rgba(37, 133, 78, 0.34);
-  background: rgba(255, 250, 243, 0.88);
-  color: #116033;
-  box-shadow: 0 12px 26px rgba(17, 96, 51, 0.08);
-}
-
-body:not(.admin-body) .hero-actions .btn-whatsapp:hover {
-  background: #e8f7ed;
-  color: #0f4f2c;
-}
-
 body:not(.admin-body) .product-card {
   display: flex;
   flex-direction: column;
@@ -3167,5 +3155,287 @@ body:not(.admin-body) .look-card img {
     bottom: 12px;
     width: min(34vw, 128px);
     font-size: clamp(2.8rem, 13vw, 4.2rem);
+  }
+}
+
+/* Home promotional banner */
+body:not(.admin-body) .hero {
+  min-height: auto;
+  padding: clamp(18px, 3vw, 34px) 0 clamp(28px, 4vw, 46px);
+}
+
+body:not(.admin-body) .hero-showcase {
+  display: block;
+}
+
+body:not(.admin-body) .hero-media {
+  position: relative;
+  display: block;
+  width: 100%;
+  min-height: auto;
+  aspect-ratio: 16 / 6;
+  overflow: hidden;
+  padding: 0;
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 18% 38%, rgba(214, 177, 94, 0.28), transparent 18rem),
+    linear-gradient(135deg, #050505, #111111 48%, #070707);
+}
+
+body:not(.admin-body) .hero-media > img:not([hidden]) {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  border-radius: 0;
+  object-fit: cover;
+  box-shadow: none;
+}
+
+body:not(.admin-body) .hero-media::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: auto;
+  aspect-ratio: auto;
+  display: block;
+  border: 0;
+  border-radius: 0;
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0.34) 46%, rgba(0, 0, 0, 0.14)),
+    radial-gradient(circle at 20% 50%, rgba(0, 0, 0, 0.32), transparent 26rem);
+  color: transparent;
+  box-shadow: none;
+  opacity: 1;
+}
+
+body:not(.admin-body) .hero-media.hero-text-hidden:not(.hero-no-image)::before {
+  background: transparent;
+}
+
+body:not(.admin-body) .hero-media.hero-button-only:not(.hero-no-image)::before {
+  background: linear-gradient(180deg, transparent 52%, rgba(0, 0, 0, 0.34));
+}
+
+body:not(.admin-body) .hero-media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border: 1px solid rgba(214, 177, 94, 0.28);
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), transparent 28%, rgba(214, 177, 94, 0.12));
+  pointer-events: none;
+}
+
+body:not(.admin-body) .hero-no-image::before {
+  content: "VM";
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 50% 48%, rgba(214, 177, 94, 0.14), transparent 12rem),
+    linear-gradient(135deg, #050505, #101010 54%, #070707);
+  color: rgba(214, 177, 94, 0.13);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(3.4rem, 10vw, 7rem);
+  font-weight: 800;
+  letter-spacing: -0.06em;
+}
+
+body:not(.admin-body) .hero-overlay {
+  position: absolute;
+  inset: 0 auto 0 0;
+  z-index: 3;
+  width: min(560px, 52%);
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: 12px;
+  padding: clamp(26px, 5vw, 66px);
+  transform: none;
+  text-align: left;
+}
+
+body:not(.admin-body) .hero-media[data-text-align="center"] .hero-overlay {
+  inset: 0;
+  width: min(680px, 86%);
+  margin: auto;
+  justify-items: center;
+  text-align: center;
+}
+
+body:not(.admin-body) .hero-media[data-text-align="right"] .hero-overlay {
+  inset: 0 0 0 auto;
+  justify-items: end;
+  text-align: right;
+}
+
+body:not(.admin-body) .hero-overlay .eyebrow,
+body:not(.admin-body) .hero-slogan {
+  display: none;
+}
+
+body:not(.admin-body) .hero-overlay h1 {
+  max-width: 520px;
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: clamp(2.3rem, 5vw, 5.8rem);
+  font-weight: 950;
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+  text-transform: none;
+  text-shadow: 0 18px 44px rgba(0, 0, 0, 0.62);
+}
+
+body:not(.admin-body) .hero-overlay > p:not(.eyebrow) {
+  max-width: 430px;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: clamp(0.95rem, 1.4vw, 1.1rem);
+  line-height: 1.45;
+  text-shadow: 0 12px 26px rgba(0, 0, 0, 0.54);
+}
+
+body:not(.admin-body) .hero-actions {
+  justify-content: inherit;
+  margin-top: 8px;
+}
+
+body:not(.admin-body) .hero-actions .btn {
+  min-height: 44px;
+  width: auto;
+  padding: 0 22px;
+  border: 1px solid rgba(247, 242, 234, 0.18);
+  border-radius: 999px;
+  background: #B85C45;
+  color: #F7F2EA;
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.28);
+}
+
+body:not(.admin-body) .hero-media.hero-button-only .hero-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  transform: none;
+  text-align: center;
+  backdrop-filter: none;
+  pointer-events: none;
+}
+
+body:not(.admin-body) .hero-media.hero-button-only .hero-actions {
+  position: static;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+  pointer-events: auto;
+}
+
+body:not(.admin-body) .hero-media.hero-button-only .hero-actions .btn {
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  width: max-content;
+  max-width: calc(100% - 32px);
+  transform: translateX(-50%);
+  z-index: 4;
+}
+
+@media (max-width: 700px) {
+  body:not(.admin-body) .hero {
+    padding: 12px 0 18px;
+  }
+
+  body:not(.admin-body) .hero-media {
+    height: clamp(220px, 62vw, 280px);
+    aspect-ratio: auto;
+    min-height: 0;
+    border-radius: 14px;
+  }
+
+  body:not(.admin-body) .hero-media::before {
+    background:
+      linear-gradient(180deg, rgba(0, 0, 0, 0.14), rgba(0, 0, 0, 0.66)),
+      radial-gradient(circle at 50% 70%, rgba(0, 0, 0, 0.34), transparent 16rem);
+  }
+
+  body:not(.admin-body) .hero-overlay,
+  body:not(.admin-body) .hero-media[data-text-align="center"] .hero-overlay,
+  body:not(.admin-body) .hero-media[data-text-align="right"] .hero-overlay {
+    inset: auto 0 0;
+    width: 100%;
+    align-content: end;
+    justify-items: start;
+    padding: 22px;
+    text-align: left;
+  }
+
+  body:not(.admin-body) .hero-media.hero-button-only .hero-overlay,
+  body:not(.admin-body) .hero-media.hero-button-only[data-text-align="center"] .hero-overlay,
+  body:not(.admin-body) .hero-media.hero-button-only[data-text-align="right"] .hero-overlay {
+    inset: 0;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    transform: none;
+    text-align: center;
+    backdrop-filter: none;
+  }
+
+  body:not(.admin-body) .hero-media.hero-button-only .hero-actions {
+    padding: 0;
+    width: max-content;
+    max-width: calc(100% - 28px);
+    background: transparent;
+    box-shadow: none;
+  }
+
+  body:not(.admin-body) .hero-media.hero-button-only .hero-actions .btn {
+    bottom: 16px;
+    width: max-content;
+    max-width: calc(100% - 32px);
+  }
+
+  body:not(.admin-body) .hero-actions .btn {
+    min-height: 44px;
+    width: auto;
+    max-width: calc(100vw - 88px);
+    padding: 0 18px;
+    font-size: 0.82rem;
+  }
+
+  body:not(.admin-body) .hero-no-image::before {
+    font-size: clamp(3rem, 18vw, 4.8rem);
+  }
+
+  body:not(.admin-body) #novidades {
+    padding-top: 18px;
+  }
+
+  body:not(.admin-body) #novidades .section-heading {
+    margin-bottom: 18px;
+  }
+
+  body:not(.admin-body) .hero-overlay h1 {
+    max-width: 92%;
+    font-size: clamp(2rem, 11vw, 3.2rem);
+  }
+
+  body:not(.admin-body) .hero-overlay > p:not(.eyebrow) {
+    max-width: 92%;
+    font-size: 0.92rem;
   }
 }
