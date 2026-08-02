@@ -896,34 +896,43 @@ function setupMenu() {
 
   const openMenu = () => {
     menuToggle.setAttribute("aria-expanded", "true");
-    menuToggle.setAttribute("aria-label", "Fechar menu");
+    menuToggle.setAttribute("aria-label", "Abrir menu");
+    menuToggle.setAttribute("aria-hidden", "true");
     navLinks.classList.add("open");
     document.body.classList.add("menu-open");
-    const firstLink = navLinks.querySelector("a");
-    if (firstLink) firstLink.focus({ preventScroll: true });
+    const closeButton = navLinks.querySelector("[data-menu-close]");
+    if (closeButton) {
+      requestAnimationFrame(() => {
+        closeButton.focus({ preventScroll: true });
+        window.setTimeout(() => closeButton.focus({ preventScroll: true }), 50);
+      });
+    }
   };
 
-  const closeMenu = () => {
+  const closeMenu = ({ restoreFocus = false } = {}) => {
     menuToggle.setAttribute("aria-expanded", "false");
     menuToggle.setAttribute("aria-label", "Abrir menu");
+    menuToggle.setAttribute("aria-hidden", "false");
     navLinks.classList.remove("open");
     document.body.classList.remove("menu-open");
+    if (restoreFocus) {
+      requestAnimationFrame(() => menuToggle.focus({ preventScroll: true }));
+    }
   };
 
   menuToggle.addEventListener("click", () => {
     const isOpen = menuToggle.getAttribute("aria-expanded") === "true";
-    if (isOpen) closeMenu();
-    else openMenu();
+    if (!isOpen) openMenu();
   });
 
   if (menuBackdrop) {
-    menuBackdrop.addEventListener("click", closeMenu);
+    menuBackdrop.addEventListener("click", () => closeMenu({ restoreFocus: true }));
   }
 
   navLinks.addEventListener("click", (event) => {
     const closeButton = event.target.closest("[data-menu-close]");
     if (closeButton) {
-      closeMenu();
+      closeMenu({ restoreFocus: true });
       return;
     }
 
@@ -957,8 +966,7 @@ function setupMenu() {
 
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && menuToggle.getAttribute("aria-expanded") === "true") {
-      closeMenu();
-      menuToggle.focus({ preventScroll: true });
+      closeMenu({ restoreFocus: true });
     }
   });
 

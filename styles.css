@@ -3512,9 +3512,10 @@ body:not(.admin-body) .menu-toggle:focus-visible {
 }
 
 body:not(.admin-body).menu-open .menu-toggle {
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
+  display: none;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
   transform: none;
   background: #171717;
 }
@@ -3699,5 +3700,106 @@ body.menu-open .menu-backdrop {
   body:not(.admin-body) .header-whatsapp {
     position: static;
     transform: none;
+  }
+}
+
+/* Final mobile banner fix: remove inherited white card wrappers from the hero. */
+@media (max-width: 700px) {
+  body:not(.admin-body) .hero {
+    display: block !important;
+    padding: 12px 0 30px !important;
+    background: transparent !important;
+  }
+
+  body:not(.admin-body) .hero-showcase {
+    display: block !important;
+    padding-right: 0 !important;
+    padding-left: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  body:not(.admin-body) .hero-media {
+    position: relative !important;
+    display: block !important;
+    width: 100% !important;
+    height: clamp(220px, 62vw, 280px) !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 14px !important;
+    overflow: hidden !important;
+    box-shadow: none !important;
+  }
+
+  body:not(.admin-body) .hero-media > img:not([hidden]) {
+    position: absolute !important;
+    inset: 0 !important;
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    object-fit: cover !important;
+    box-shadow: none !important;
+  }
+
+  body:not(.admin-body) .hero-media::after {
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  body:not(.admin-body) .hero-overlay,
+  body:not(.admin-body) .hero-media[data-text-align="center"] .hero-overlay,
+  body:not(.admin-body) .hero-media[data-text-align="right"] .hero-overlay {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 18px !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    transform: none !important;
+    backdrop-filter: none !important;
+  }
+
+  body:not(.admin-body) .hero-media.hero-text-hidden:not(.hero-button-only) .hero-overlay,
+  body:not(.admin-body) .hero-overlay[hidden] {
+    display: none !important;
+  }
+
+  body:not(.admin-body) .hero-media.hero-button-only .hero-overlay {
+    pointer-events: none !important;
+  }
+
+  body:not(.admin-body) .hero-media.hero-button-only .hero-actions {
+    position: static !important;
+    width: auto !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  body:not(.admin-body) .hero-media.hero-button-only .hero-actions .btn {
+    position: absolute !important;
+    left: 50% !important;
+    bottom: 16px !important;
+    z-index: 4 !important;
+    width: max-content !important;
+    max-width: calc(100% - 32px) !important;
+    transform: translateX(-50%) !important;
+    pointer-events: auto !important;
+  }
+
+  body:not(.admin-body) #novidades {
+    padding-top: 30px !important;
   }
 }
