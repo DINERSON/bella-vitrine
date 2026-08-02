@@ -82,14 +82,14 @@ input {
 }
 
 .site-header {
-  position: sticky;
-  top: 0;
+  position: relative;
+  top: auto;
   z-index: 20;
   background:
     linear-gradient(90deg, rgba(5, 7, 11, 0.96), rgba(9, 9, 9, 0.94), rgba(5, 7, 11, 0.96));
   border-bottom: 1px solid rgba(230, 193, 90, 0.18);
   box-shadow: 0 18px 48px rgba(0, 0, 0, 0.34);
-  backdrop-filter: blur(20px);
+  backdrop-filter: none;
 }
 
 body.menu-open .site-header {
@@ -3437,5 +3437,256 @@ body:not(.admin-body) .hero-media.hero-button-only .hero-actions .btn {
   body:not(.admin-body) .hero-overlay > p:not(.eyebrow) {
     max-width: 92%;
     font-size: 0.92rem;
+  }
+}
+
+/* Public menu final polish */
+body:not(.admin-body) .nav {
+  grid-template-columns: 50px 1fr 50px;
+}
+
+body:not(.admin-body) .brand {
+  grid-column: 2;
+  justify-self: center;
+}
+
+body:not(.admin-body) .header-whatsapp {
+  grid-column: 3;
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+body:not(.admin-body) .menu-toggle {
+  position: fixed;
+  top: calc(16px + env(safe-area-inset-top));
+  left: calc(16px + env(safe-area-inset-left));
+  grid-column: 1;
+  grid-row: 1;
+  justify-self: start;
+  z-index: 1300;
+  width: 46px;
+  height: 46px;
+  min-width: 46px;
+  min-height: 46px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid #B8955A;
+  border-radius: 12px;
+  background: rgba(23, 23, 23, 0.98);
+  color: #B8955A;
+  opacity: 1;
+  visibility: visible;
+  cursor: pointer;
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.28);
+  transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+body:not(.admin-body) .menu-toggle .menu-dots {
+  display: block;
+  width: auto;
+  height: auto;
+  margin: 0;
+  background: transparent;
+  color: currentColor;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 1.75rem;
+  font-weight: 900;
+  line-height: 1;
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+
+body:not(.admin-body) .menu-toggle span:not(.sr-only):not(.menu-dots) {
+  display: none;
+}
+
+body:not(.admin-body) .menu-toggle:hover,
+body:not(.admin-body) .menu-toggle:focus-visible {
+  background: #B8955A;
+  color: #171717;
+  box-shadow: 0 14px 30px rgba(184, 149, 90, 0.22);
+}
+
+body:not(.admin-body).menu-open .menu-toggle {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: none;
+  background: #171717;
+}
+
+body:not(.admin-body) .menu-backdrop {
+  z-index: 980;
+  display: block;
+  opacity: 0;
+  pointer-events: none;
+  background: rgba(0, 0, 0, 0.42);
+  backdrop-filter: none;
+}
+
+body:not(.admin-body) .nav-links {
+  position: fixed;
+  top: 0;
+  right: auto;
+  left: 0;
+  z-index: 1050;
+  width: min(86vw, 340px);
+  max-height: none;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: stretch;
+  gap: 0;
+  padding: 0;
+  border: 0;
+  border-right: 1px solid rgba(184, 149, 90, 0.36);
+  border-radius: 0 18px 18px 0;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(184, 149, 90, 0.14), transparent 12rem),
+    linear-gradient(180deg, #171717 0%, #111111 100%);
+  color: #F7F2EA;
+  box-shadow: 20px 0 54px rgba(0, 0, 0, 0.42);
+  backdrop-filter: none;
+  overflow: hidden;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateX(-105%);
+  transition: opacity 0.22s ease, transform 0.22s ease, visibility 0.22s ease;
+}
+
+body:not(.admin-body) .nav-links.open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateX(0);
+}
+
+body:not(.admin-body) .drawer-header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 78px;
+  padding: 16px;
+  border-bottom: 1px solid rgba(184, 149, 90, 0.24);
+  background: #171717;
+}
+
+body:not(.admin-body) .drawer-header strong {
+  color: #B8955A;
+}
+
+body:not(.admin-body) .drawer-brand-copy span {
+  color: rgba(247, 242, 234, 0.74);
+}
+
+body:not(.admin-body) .drawer-close {
+  position: relative;
+  z-index: 1100;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(184, 149, 90, 0.7);
+  border-radius: 12px;
+  background: #171717;
+  color: #B8955A;
+  font-size: 1.45rem;
+  line-height: 1;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+body:not(.admin-body) .drawer-close:hover,
+body:not(.admin-body) .drawer-close:focus-visible {
+  background: #B8955A;
+  color: #171717;
+}
+
+body:not(.admin-body) .drawer-menu-items {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 10px 14px 14px;
+  -webkit-overflow-scrolling: touch;
+}
+
+body:not(.admin-body) .nav-links a {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 10px;
+  border: 0;
+  border-bottom: 1px solid rgba(184, 149, 90, 0.18);
+  border-radius: 10px;
+  background: transparent;
+  color: #F7F2EA;
+  font-size: 0.98rem;
+  font-weight: 850;
+  letter-spacing: 0.01em;
+  box-shadow: none;
+  pointer-events: auto;
+}
+
+body:not(.admin-body) .nav-links a::after {
+  content: "›";
+  color: rgba(184, 149, 90, 0.84);
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+body:not(.admin-body) .nav-links a:hover,
+body:not(.admin-body) .nav-links a:focus-visible,
+body:not(.admin-body) .nav-links a.active {
+  background: #B85C45;
+  color: #F7F2EA;
+  box-shadow: none;
+}
+
+body:not(.admin-body) .nav-links .nav-mobile-whatsapp {
+  display: flex;
+  min-height: 54px;
+  align-items: center;
+  justify-content: center;
+  margin: auto 16px calc(20px + env(safe-area-inset-bottom));
+  border: 1px solid rgba(184, 149, 90, 0.26);
+  border-radius: 999px;
+  background: #B85C45;
+  color: #F7F2EA;
+  font-size: 1rem;
+  font-weight: 900;
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.24);
+}
+
+body:not(.admin-body) .nav-links .nav-mobile-whatsapp::after {
+  color: rgba(247, 242, 234, 0.72);
+}
+
+body.menu-open .menu-backdrop {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@media (max-width: 1180px) {
+  body:not(.admin-body) .nav {
+    grid-template-columns: 50px 1fr 50px;
+  }
+
+  body:not(.admin-body) .brand {
+    transform: none;
+  }
+
+  body:not(.admin-body) .header-whatsapp {
+    position: static;
+    transform: none;
   }
 }

@@ -934,6 +934,21 @@ function setupMenu() {
       requestAnimationFrame(() => setActiveFilter(filter));
       return;
     }
+
+    const targetId = link.getAttribute("href");
+    if (targetId && targetId.startsWith("#")) {
+      const targetSection = document.querySelector(targetId);
+      if (targetSection) {
+        event.preventDefault();
+        navLinks.querySelectorAll("a").forEach((item) => item.classList.remove("active"));
+        link.classList.add("active");
+        closeMenu();
+        requestAnimationFrame(() => {
+          targetSection.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+        return;
+      }
+    }
     closeMenu();
   });
 
