@@ -902,10 +902,13 @@ h2 {
 .catalog-load-more {
   grid-column: 1 / -1;
   justify-self: center;
-  margin-top: 10px;
+  margin: 18px auto 4px;
+  min-height: 46px;
+  padding: 0 24px;
   border: 1px solid rgba(184, 149, 90, 0.38);
   background: #B85C45;
   color: #F7F2EA;
+  letter-spacing: 0.04em;
 }
 
 .empty-state {

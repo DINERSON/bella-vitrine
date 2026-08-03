@@ -710,13 +710,13 @@ function renderCatalog() {
     : "Nenhum produto encontrado.";
   catalogProducts.innerHTML = products.length
     ? `${renderGroupedProductCards(visibleSlice, { loading: "lazy" })}
-      ${hasMore ? '<button class="btn catalog-load-more" type="button" data-load-more-products>Carregar mais produtos</button>' : ""}`
+      ${hasMore ? '<button class="btn catalog-load-more" type="button" data-load-more-products aria-label="Carregar mais produtos">CARREGAR MAIS PRODUTOS</button>' : ""}`
     : '<div class="empty-state">Nenhum produto encontrado nesta categoria.</div>';
 
   const loadMoreButton = catalogProducts.querySelector("[data-load-more-products]");
   if (loadMoreButton) {
     loadMoreButton.addEventListener("click", () => {
-      catalogVisibleCount += CATALOG_PAGE_SIZE;
+      catalogVisibleCount = Math.min(catalogVisibleCount + CATALOG_PAGE_SIZE, products.length);
       renderCatalog();
     });
   }
