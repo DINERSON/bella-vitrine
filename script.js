@@ -24,6 +24,8 @@ const menuBackdrop = document.querySelector(".menu-backdrop");
 const productModal = document.querySelector("#product-modal");
 const productModalContent = document.querySelector("#product-modal-content");
 
+const CATALOG_PAGE_SIZE = 12;
+let catalogVisibleCount = CATALOG_PAGE_SIZE;
 let activeFilter = "Todos";
 let visibleProducts = [...PRODUCTS];
 let visibleLooks = [...LOOKS];
@@ -302,6 +304,9 @@ function updateHeroImage() {
   if (nextImage) {
     heroImage.src = nextImage;
     heroImage.alt = SITE_CONTENT.hero.imageAlt || "Banner promocional Vitrine Moda";
+    heroImage.loading = "eager";
+    heroImage.decoding = "async";
+    heroImage.fetchPriority = "high";
     heroImage.hidden = false;
     heroImage.style.objectPosition = SITE_CONTENT.hero.imagePosition || "center";
     heroImage.onerror = function () {
@@ -426,7 +431,7 @@ function orderedProductsForDisplay(products) {
   return groupedProducts([...products]).flatMap((group) => group.products);
 }
 
-function renderGroupedProductCards(products) {
+function renderGroupedProductCards(products, cardOptions = {}) {
   return groupedProducts([...products])
     .map(
       (group) => `
@@ -434,18 +439,20 @@ function renderGroupedProductCards(products) {
           <span>${escapeHtml(group.name)}</span>
           <small>${group.products.length} produto${group.products.length === 1 ? "" : "s"}</small>
         </div>
-        ${group.products.map(renderProductCard).join("")}
+        ${group.products.map((product) => renderProductCard(product, cardOptions)).join("")}
       `
     )
     .join("");
 }
 
-function imageMarkup(src, alt) {
+function imageMarkup(src, alt, options = {}) {
   const safeSrc = escapeHtml(src);
   const safeAlt = escapeHtml(alt);
   const hasImage = Boolean(src && String(src).trim());
+  const loading = options.loading || "lazy";
+  const fetchPriority = options.fetchPriority ? ` fetchpriority="${escapeHtml(options.fetchPriority)}"` : "";
   const image = hasImage
-    ? `<img src="${safeSrc}" alt="${safeAlt}" onerror="this.closest('.product-photo').classList.add('photo-missing'); this.remove();">`
+    ? `<img src="${safeSrc}" alt="${safeAlt}" width="600" height="800" loading="${escapeHtml(loading)}" decoding="async"${fetchPriority} onerror="this.closest('.product-photo').classList.add('photo-missing'); this.remove();">`
     : "";
 
   return `
@@ -463,7 +470,7 @@ function modalImageMarkup(src, alt, sold) {
   const safeAlt = escapeHtml(alt);
   const hasImage = Boolean(src && String(src).trim());
   const image = hasImage
-    ? `<img id="product-modal-main-image" src="${safeSrc}" alt="${safeAlt}" onerror="this.closest('.product-modal-photo').classList.add('photo-missing'); this.remove();">`
+    ? `<img id="product-modal-main-image" src="${safeSrc}" alt="${safeAlt}" width="900" height="1200" decoding="async" onerror="this.closest('.product-modal-photo').classList.add('photo-missing'); this.remove();">`
     : "";
 
   return `
@@ -486,7 +493,7 @@ function renderProductThumbnails(product) {
         .map(
           (image, index) => `
             <button class="product-thumb ${index === 0 ? "active" : ""}" type="button" data-image="${escapeHtml(image)}" aria-label="Ver foto ${index + 1}">
-              <img src="${escapeHtml(image)}" alt="" onerror="this.closest('.product-thumb').classList.add('photo-missing'); this.remove();">
+              <img src="${escapeHtml(image)}" alt="" width="120" height="160" loading="lazy" decoding="async" onerror="this.closest('.product-thumb').classList.add('photo-missing'); this.remove();">
               <span>Foto ${index + 1}</span>
             </button>
           `
@@ -572,7 +579,7 @@ function closeProductModal() {
   document.body.classList.remove("modal-open");
 }
 
-function renderProductCard(product) {
+function renderProductCard(product, options = {}) {
   const sold = isSold(product);
   const theme = getTheme(product);
   const sizes = normalizeSizes(product);
@@ -592,7 +599,7 @@ function renderProductCard(product) {
   return `
     <article class="product-card theme-${theme} ${sold ? "is-sold-out" : ""}" data-product-id="${escapeHtml(cardId)}">
       <div class="product-image">
-        ${imageMarkup(primaryImage, product.nome)}
+        ${imageMarkup(primaryImage, product.nome, options)}
         ${sold ? '<span class="sold-overlay">Esgotado</span>' : ""}
         ${sale.hasSale ? '<span class="badge badge-promo">Promoção</span>' : summerBadge}
         <span class="badge badge-status ${sold ? "sold" : "available"}">${escapeHtml(statusLabel)}</span>
@@ -624,6 +631,7 @@ function filteredProducts(filter) {
 
 function setActiveFilter(filter) {
   activeFilter = filter;
+  catalogVisibleCount = CATALOG_PAGE_SIZE;
   renderCatalog();
   document.querySelector("#catalogo").scrollIntoView({ behavior: "smooth", block: "start" });
 }
@@ -686,31 +694,45 @@ function renderFilters() {
   filterBar.querySelectorAll("[data-filter]").forEach((button) => {
     button.addEventListener("click", () => {
       activeFilter = button.dataset.filter;
+      catalogVisibleCount = CATALOG_PAGE_SIZE;
       renderCatalog();
     });
   });
 }
 
 function renderCatalog() {
-  const products = filteredProducts(activeFilter);
+  const products = orderedProductsForDisplay(filteredProducts(activeFilter));
+  const visibleSlice = products.slice(0, catalogVisibleCount);
+  const hasMore = visibleSlice.length < products.length;
   renderFilters();
-  catalogFeedback.textContent = `${products.length} produto${products.length === 1 ? "" : "s"} encontrado${products.length === 1 ? "" : "s"}.`;
+  catalogFeedback.textContent = products.length
+    ? `${Math.min(visibleSlice.length, products.length)} de ${products.length} produto${products.length === 1 ? "" : "s"} exibido${visibleSlice.length === 1 ? "" : "s"}.`
+    : "Nenhum produto encontrado.";
   catalogProducts.innerHTML = products.length
-    ? renderGroupedProductCards(products)
+    ? `${renderGroupedProductCards(visibleSlice, { loading: "lazy" })}
+      ${hasMore ? '<button class="btn catalog-load-more" type="button" data-load-more-products>Carregar mais produtos</button>' : ""}`
     : '<div class="empty-state">Nenhum produto encontrado nesta categoria.</div>';
+
+  const loadMoreButton = catalogProducts.querySelector("[data-load-more-products]");
+  if (loadMoreButton) {
+    loadMoreButton.addEventListener("click", () => {
+      catalogVisibleCount += CATALOG_PAGE_SIZE;
+      renderCatalog();
+    });
+  }
 }
 
 function renderFeaturedProducts() {
   const products = orderedProductsForDisplay(visibleProducts.filter((product) => product.maisVendido || product.destaque)).slice(0, 4);
   featuredProducts.innerHTML = products.length
-    ? products.map(renderProductCard).join("")
+    ? products.map((product) => renderProductCard(product, { loading: "lazy" })).join("")
     : '<div class="empty-state">Os mais vendidos aparecem aqui quando houver produtos em destaque.</div>';
 }
 
 function renderPromoProducts() {
   const products = orderedProductsForDisplay(visibleProducts.filter((product) => productSaleInfo(product).hasSale)).slice(0, 4);
   promoProducts.innerHTML = products.length
-    ? products.map(renderProductCard).join("")
+    ? products.map((product) => renderProductCard(product, { loading: "lazy" })).join("")
     : '<div class="empty-state">As promoções aparecem aqui quando houver produtos com promoção marcada.</div>';
 }
 
@@ -1109,26 +1131,37 @@ async function loadFirebaseData() {
   }
 
   try {
-    const remoteStoreConfig = await firebase.fetchStoreConfig();
+    const storeConfigPromise = firebase.fetchStoreConfig().catch((error) => {
+      console.error("[Vitrine Moda] Erro ao carregar configurações da loja.", error);
+      return null;
+    });
+    const identitiesPromise = firebase.fetchStoreIdentities().catch((error) => {
+      console.error("[Vitrine Moda] Erro ao carregar identidades da loja.", error);
+      return null;
+    });
+    const productsPromise = firebase.fetchProducts();
+
+    const remoteStoreConfig = await storeConfigPromise;
     if (remoteStoreConfig) {
       applyRemoteStoreConfig(remoteStoreConfig);
       renderMenu();
       applyStoreConfig();
     }
 
-    try {
-      const remoteIdentities = await firebase.fetchStoreIdentities();
+    const remoteIdentities = await identitiesPromise;
+    if (remoteIdentities) {
       const activeIdentities = remoteIdentities.filter((identity) => identity.active !== false);
       visibleLooks = activeIdentities.length ? remoteIdentities : [...LOOKS];
       renderLooks();
-    } catch (error) {
+    } else {
       visibleLooks = [...LOOKS];
       renderLooks();
     }
 
-    const remoteProducts = await firebase.fetchProducts();
+    const remoteProducts = await productsPromise;
     if (remoteProducts.length) {
       visibleProducts = remoteProducts;
+      catalogVisibleCount = CATALOG_PAGE_SIZE;
       catalogFeedback.textContent = "Produtos carregados do painel administrativo.";
       renderAllProductSections();
       return;

@@ -8,6 +8,9 @@ let db = null;
 let storage = null;
 let firebaseModules = null;
 let initPromise = null;
+let productsPromise = null;
+let identitiesPromise = null;
+let storeConfigPromise = null;
 
 async function ensureFirebase() {
   if (!configured) {
@@ -150,20 +153,22 @@ function normalizeIdentity(docSnapshot) {
 
 async function fetchProducts() {
   if (!configured) return [];
+  if (productsPromise) return productsPromise;
   await ensureFirebase();
-  const snapshot = await firebaseModules.getDocs(
+  productsPromise = firebaseModules.getDocs(
     firebaseModules.query(productsCollection(), firebaseModules.orderBy("createdAt", "desc"))
-  );
-  return snapshot.docs.map(normalizeProduct);
+  ).then((snapshot) => snapshot.docs.map(normalizeProduct));
+  return productsPromise;
 }
 
 async function fetchStoreIdentities() {
   if (!configured) return [];
+  if (identitiesPromise) return identitiesPromise;
   await ensureFirebase();
-  const snapshot = await firebaseModules.getDocs(
+  identitiesPromise = firebaseModules.getDocs(
     firebaseModules.query(identitiesCollection(), firebaseModules.orderBy("order", "asc"))
-  );
-  return snapshot.docs.map(normalizeIdentity);
+  ).then((snapshot) => snapshot.docs.map(normalizeIdentity));
+  return identitiesPromise;
 }
 
 function sizesStockFromProduct(product) {
@@ -320,9 +325,11 @@ async function uploadHomeBannerImage(imageFile, slot) {
 
 async function fetchStoreConfig() {
   if (!configured) return null;
+  if (storeConfigPromise) return storeConfigPromise;
   await ensureFirebase();
-  const snapshot = await firebaseModules.getDoc(storeConfigDoc());
-  return snapshot.exists() ? normalizeStoreConfig(snapshot.data()) : null;
+  storeConfigPromise = firebaseModules.getDoc(storeConfigDoc())
+    .then((snapshot) => snapshot.exists() ? normalizeStoreConfig(snapshot.data()) : null);
+  return storeConfigPromise;
 }
 
 async function saveStoreConfig(storeConfig, bannerFiles = {}) {
@@ -341,6 +348,7 @@ async function saveStoreConfig(storeConfig, bannerFiles = {}) {
     },
     { merge: true }
   );
+  storeConfigPromise = null;
 }
 
 async function saveProduct(product, imageFiles = [], existingId = null) {
@@ -386,6 +394,7 @@ async function saveProduct(product, imageFiles = [], existingId = null) {
       console.error("[Vitrine Moda] Erro ao atualizar produto no Firestore.", { existingId, payload, error });
       throw error;
     }
+    productsPromise = null;
     return existingId;
   }
 
@@ -397,6 +406,7 @@ async function saveProduct(product, imageFiles = [], existingId = null) {
     console.error("[Vitrine Moda] Erro ao criar produto no Firestore.", { payload, error });
     throw error;
   }
+  productsPromise = null;
   return created.id;
 }
 
@@ -417,11 +427,13 @@ async function saveStoreIdentity(identity, imageFile = null, existingId = null) 
 
   if (existingId) {
     await firebaseModules.updateDoc(firebaseModules.doc(db, "storeIdentities", existingId), payload);
+    identitiesPromise = null;
     return existingId;
   }
 
   payload.createdAt = firebaseModules.serverTimestamp();
   const created = await firebaseModules.addDoc(identitiesCollection(), payload);
+  identitiesPromise = null;
   return created.id;
 }
 
@@ -431,11 +443,13 @@ async function updateStoreIdentityActive(id, active) {
     active: Boolean(active),
     updatedAt: firebaseModules.serverTimestamp(),
   });
+  identitiesPromise = null;
 }
 
 async function deleteStoreIdentity(id) {
   await ensureFirebase();
   await firebaseModules.deleteDoc(firebaseModules.doc(db, "storeIdentities", id));
+  identitiesPromise = null;
 }
 
 async function updateProductStatus(id, status) {
@@ -444,11 +458,13 @@ async function updateProductStatus(id, status) {
     status,
     updatedAt: firebaseModules.serverTimestamp(),
   });
+  productsPromise = null;
 }
 
 async function deleteProduct(id) {
   await ensureFirebase();
   await firebaseModules.deleteDoc(firebaseModules.doc(db, "products", id));
+  productsPromise = null;
 }
 
 function watchAuth(callback) {
