@@ -81,6 +81,56 @@ function storeConfigDoc() {
   return firebaseModules.doc(db, "settings", "store");
 }
 
+function collectImageUrls(value, urls = []) {
+  if (!value) return urls;
+
+  if (typeof value === "string") {
+    const image = value.trim();
+    if (image) urls.push(image);
+    return urls;
+  }
+
+  if (Array.isArray(value)) {
+    value.forEach((item) => collectImageUrls(item, urls));
+    return urls;
+  }
+
+  if (typeof value === "object") {
+    [
+      "url",
+      "src",
+      "href",
+      "imagem",
+      "image",
+      "imageUrl",
+      "imageURL",
+      "downloadUrl",
+      "downloadURL",
+      "photo",
+      "photoUrl",
+      "foto",
+    ].forEach((key) => collectImageUrls(value[key], urls));
+  }
+
+  return urls;
+}
+
+function normalizeProductImages(data = {}) {
+  return [
+    ...collectImageUrls(data.imagem),
+    ...collectImageUrls(data.imagens),
+    ...collectImageUrls(data.image),
+    ...collectImageUrls(data.images),
+    ...collectImageUrls(data.imageUrl),
+    ...collectImageUrls(data.photo),
+    ...collectImageUrls(data.photoUrl),
+    ...collectImageUrls(data.foto),
+    ...collectImageUrls(data.fotos),
+  ]
+    .filter((image) => /^https?:\/\//i.test(image) || /^[\w./-]+\.(jpe?g|png|webp|gif|avif)(\?.*)?$/i.test(image))
+    .filter((image, index, list) => list.indexOf(image) === index);
+}
+
 function normalizeStoreConfig(data = {}) {
   const instagramUser = String(data.instagramUser || "").replace(/^@/, "").trim();
   const instagramUrl = data.instagramUrl || (instagramUser ? `https://www.instagram.com/${instagramUser}/` : "");
@@ -112,6 +162,7 @@ function normalizeStoreConfig(data = {}) {
 
 function normalizeProduct(docSnapshot) {
   const data = docSnapshot.data();
+  const images = normalizeProductImages(data);
   return {
     id: docSnapshot.id,
     firestoreId: docSnapshot.id,
@@ -126,8 +177,8 @@ function normalizeProduct(docSnapshot) {
     tecido: data.tecido || "",
     preco: data.preco || data.price || data.salePrice || data.promotionalPrice || "",
     precoAntigo: data.precoAntigo || data.oldPrice || data.originalPrice || "",
-    imagem: data.imagem || "",
-    imagens: Array.isArray(data.imagens) ? data.imagens : [],
+    imagem: images[0] || "",
+    imagens: images,
     status: data.status || "Disponível",
     destaque: Boolean(data.destaque),
     maisVendido: Boolean(data.maisVendido || data.destaque),

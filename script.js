@@ -187,11 +187,53 @@ function findProductByCardId(id) {
   return visibleProducts.find((product) => productCardId(product) === id);
 }
 
+function collectImageUrls(value, urls = []) {
+  if (!value) return urls;
+
+  if (typeof value === "string") {
+    const image = value.trim();
+    if (image) urls.push(image);
+    return urls;
+  }
+
+  if (Array.isArray(value)) {
+    value.forEach((item) => collectImageUrls(item, urls));
+    return urls;
+  }
+
+  if (typeof value === "object") {
+    [
+      "url",
+      "src",
+      "href",
+      "imagem",
+      "image",
+      "imageUrl",
+      "imageURL",
+      "downloadUrl",
+      "downloadURL",
+      "photo",
+      "photoUrl",
+      "foto",
+    ].forEach((key) => collectImageUrls(value[key], urls));
+  }
+
+  return urls;
+}
+
 function productImages(product) {
-  const images = Array.isArray(product?.imagens) ? product.imagens : [];
-  return [product?.imagem, ...images]
-    .map((image) => String(image || "").trim())
-    .filter(Boolean)
+  return [
+    ...collectImageUrls(product?.imagem),
+    ...collectImageUrls(product?.imagens),
+    ...collectImageUrls(product?.image),
+    ...collectImageUrls(product?.images),
+    ...collectImageUrls(product?.imageUrl),
+    ...collectImageUrls(product?.photo),
+    ...collectImageUrls(product?.photoUrl),
+    ...collectImageUrls(product?.foto),
+    ...collectImageUrls(product?.fotos),
+  ]
+    .filter((image) => /^https?:\/\//i.test(image) || /^[\w./-]+\.(jpe?g|png|webp|gif|avif)(\?.*)?$/i.test(image))
     .filter((image, index, list) => list.indexOf(image) === index);
 }
 
@@ -429,6 +471,29 @@ function groupedProducts(products) {
 
 function orderedProductsForDisplay(products) {
   return groupedProducts([...products]).flatMap((group) => group.products);
+}
+
+function paginatedProductsForDisplay(products, limit) {
+  const groups = groupedProducts([...products]);
+  const visible = [];
+  let index = 0;
+
+  while (visible.length < limit) {
+    let addedInRound = false;
+
+    groups.forEach((group) => {
+      const product = group.products[index];
+      if (product && visible.length < limit) {
+        visible.push(product);
+        addedInRound = true;
+      }
+    });
+
+    if (!addedInRound) break;
+    index += 1;
+  }
+
+  return visible;
 }
 
 function renderGroupedProductCards(products, cardOptions = {}) {
@@ -701,8 +766,8 @@ function renderFilters() {
 }
 
 function renderCatalog() {
-  const products = orderedProductsForDisplay(filteredProducts(activeFilter));
-  const visibleSlice = products.slice(0, catalogVisibleCount);
+  const products = filteredProducts(activeFilter);
+  const visibleSlice = paginatedProductsForDisplay(products, catalogVisibleCount);
   const hasMore = visibleSlice.length < products.length;
   renderFilters();
   catalogFeedback.textContent = products.length
