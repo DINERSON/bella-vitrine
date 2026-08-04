@@ -183,6 +183,18 @@ function productCardId(product) {
   return String(product.firestoreId || product.id || product.codigo || "");
 }
 
+function uniqueProductsById(products) {
+  const unique = new Map();
+
+  products.forEach((product) => {
+    const id = productCardId(product);
+    if (!id || unique.has(id)) return;
+    unique.set(id, product);
+  });
+
+  return [...unique.values()];
+}
+
 function findProductByCardId(id) {
   return visibleProducts.find((product) => productCardId(product) === id);
 }
@@ -691,7 +703,7 @@ function renderProductCard(product, options = {}) {
 }
 
 function filteredProducts(filter) {
-  return visibleProducts.filter((product) => matchesFilter(product, filter));
+  return uniqueProductsById(visibleProducts).filter((product) => matchesFilter(product, filter));
 }
 
 function setActiveFilter(filter) {
@@ -766,7 +778,7 @@ function renderFilters() {
 }
 
 function renderCatalog() {
-  const products = filteredProducts(activeFilter);
+  const products = uniqueProductsById(filteredProducts(activeFilter));
   const visibleSlice = paginatedProductsForDisplay(products, catalogVisibleCount);
   const hasMore = visibleSlice.length < products.length;
   renderFilters();
@@ -788,14 +800,14 @@ function renderCatalog() {
 }
 
 function renderFeaturedProducts() {
-  const products = orderedProductsForDisplay(visibleProducts.filter((product) => product.maisVendido || product.destaque)).slice(0, 4);
+  const products = orderedProductsForDisplay(uniqueProductsById(visibleProducts).filter((product) => product.maisVendido || product.destaque)).slice(0, 4);
   featuredProducts.innerHTML = products.length
     ? products.map((product) => renderProductCard(product, { loading: "lazy" })).join("")
     : '<div class="empty-state">Os mais vendidos aparecem aqui quando houver produtos em destaque.</div>';
 }
 
 function renderPromoProducts() {
-  const products = orderedProductsForDisplay(visibleProducts.filter((product) => productSaleInfo(product).hasSale)).slice(0, 4);
+  const products = orderedProductsForDisplay(uniqueProductsById(visibleProducts).filter((product) => productSaleInfo(product).hasSale)).slice(0, 4);
   promoProducts.innerHTML = products.length
     ? products.map((product) => renderProductCard(product, { loading: "lazy" })).join("")
     : '<div class="empty-state">As promoções aparecem aqui quando houver produtos com promoção marcada.</div>';
@@ -1225,7 +1237,7 @@ async function loadFirebaseData() {
 
     const remoteProducts = await productsPromise;
     if (remoteProducts.length) {
-      visibleProducts = remoteProducts;
+      visibleProducts = uniqueProductsById(remoteProducts);
       catalogVisibleCount = CATALOG_PAGE_SIZE;
       catalogFeedback.textContent = "Produtos carregados do painel administrativo.";
       renderAllProductSections();
