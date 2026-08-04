@@ -24,10 +24,9 @@ const menuBackdrop = document.querySelector(".menu-backdrop");
 const productModal = document.querySelector("#product-modal");
 const productModalContent = document.querySelector("#product-modal-content");
 
-const CATALOG_PAGE_SIZE = 12;
-let catalogVisibleCount = CATALOG_PAGE_SIZE;
 let activeFilter = "Todos";
 let visibleProducts = [...PRODUCTS];
+let totalProductsLoaded = PRODUCTS.length;
 let visibleLooks = [...LOOKS];
 let menuReady = false;
 let heroImageWatcherReady = false;
@@ -187,7 +186,7 @@ function uniqueProductsById(products) {
   const unique = new Map();
 
   products.forEach((product) => {
-    const id = productCardId(product);
+    const id = String(product.firestoreId || product.id || "");
     if (!id || unique.has(id)) return;
     unique.set(id, product);
   });
@@ -390,6 +389,22 @@ function matchesFilter(product, filter) {
   return product.categoria === filter;
 }
 
+function productMatchesCatalogFilter(product, filter) {
+  const selectedFilter = normalizeProductText(filter);
+  const category = normalizeProductText(product.categoria);
+  const subcategory = normalizeProductText(product.subcategoria);
+  const name = normalizeProductText(product.nome);
+
+  if (selectedFilter === "todos") return true;
+  if (selectedFilter === "mais vendidos") return Boolean(product.maisVendido || product.destaque);
+  if (selectedFilter === "promocoes") return productSaleInfo(product).hasSale;
+  if (selectedFilter === "oversized") {
+    return category === "oversized" || subcategory === "oversized" || hasWord(name, ["oversized"]);
+  }
+  if (selectedFilter === "acessorios") return category === "acessorios" || subcategory.includes("acessor");
+  return category === selectedFilter;
+}
+
 const PRODUCT_DISPLAY_GROUPS = [
   "Plus Size",
   "Novidades",
@@ -483,29 +498,6 @@ function groupedProducts(products) {
 
 function orderedProductsForDisplay(products) {
   return groupedProducts([...products]).flatMap((group) => group.products);
-}
-
-function paginatedProductsForDisplay(products, limit) {
-  const groups = groupedProducts([...products]);
-  const visible = [];
-  let index = 0;
-
-  while (visible.length < limit) {
-    let addedInRound = false;
-
-    groups.forEach((group) => {
-      const product = group.products[index];
-      if (product && visible.length < limit) {
-        visible.push(product);
-        addedInRound = true;
-      }
-    });
-
-    if (!addedInRound) break;
-    index += 1;
-  }
-
-  return visible;
 }
 
 function renderGroupedProductCards(products, cardOptions = {}) {
@@ -703,12 +695,11 @@ function renderProductCard(product, options = {}) {
 }
 
 function filteredProducts(filter) {
-  return uniqueProductsById(visibleProducts).filter((product) => matchesFilter(product, filter));
+  return uniqueProductsById(visibleProducts).filter((product) => productMatchesCatalogFilter(product, filter));
 }
 
 function setActiveFilter(filter) {
   activeFilter = filter;
-  catalogVisibleCount = CATALOG_PAGE_SIZE;
   renderCatalog();
   document.querySelector("#catalogo").scrollIntoView({ behavior: "smooth", block: "start" });
 }
@@ -771,32 +762,32 @@ function renderFilters() {
   filterBar.querySelectorAll("[data-filter]").forEach((button) => {
     button.addEventListener("click", () => {
       activeFilter = button.dataset.filter;
-      catalogVisibleCount = CATALOG_PAGE_SIZE;
       renderCatalog();
     });
   });
 }
 
 function renderCatalog() {
-  const products = uniqueProductsById(filteredProducts(activeFilter));
-  const visibleSlice = paginatedProductsForDisplay(products, catalogVisibleCount);
-  const hasMore = visibleSlice.length < products.length;
-  renderFilters();
-  catalogFeedback.textContent = products.length
-    ? `${Math.min(visibleSlice.length, products.length)} de ${products.length} produto${products.length === 1 ? "" : "s"} exibido${visibleSlice.length === 1 ? "" : "s"}.`
-    : "Nenhum produto encontrado.";
-  catalogProducts.innerHTML = products.length
-    ? `${renderGroupedProductCards(visibleSlice, { loading: "lazy" })}
-      ${hasMore ? '<button class="btn catalog-load-more" type="button" data-load-more-products aria-label="Carregar mais produtos">CARREGAR MAIS PRODUTOS</button>' : ""}`
-    : '<div class="empty-state">Nenhum produto encontrado nesta categoria.</div>';
+  const products = orderedProductsForDisplay(uniqueProductsById(filteredProducts(activeFilter)));
+  const masculineProducts = uniqueProductsById(visibleProducts).filter((product) => productMatchesCatalogFilter(product, "Masculino"));
+  const masculineIds = masculineProducts.map((product) => String(product.firestoreId || product.id || ""));
 
-  const loadMoreButton = catalogProducts.querySelector("[data-load-more-products]");
-  if (loadMoreButton) {
-    loadMoreButton.addEventListener("click", () => {
-      catalogVisibleCount = Math.min(catalogVisibleCount + CATALOG_PAGE_SIZE, products.length);
-      renderCatalog();
+  if (normalizeProductText(activeFilter) === "masculino") {
+    console.log({
+      totalFirebase: totalProductsLoaded,
+      totalIdsUnicos: uniqueProductsById(visibleProducts).length,
+      totalMasculino: masculineProducts.length,
+      idsMasculinosUnicos: new Set(masculineIds).size,
     });
   }
+
+  renderFilters();
+  catalogFeedback.textContent = products.length
+    ? `${products.length} produto${products.length === 1 ? "" : "s"} encontrado${products.length === 1 ? "" : "s"}`
+    : "Nenhum produto encontrado.";
+  catalogProducts.innerHTML = products.length
+    ? renderGroupedProductCards(products, { loading: "lazy" })
+    : '<div class="empty-state">Nenhum produto encontrado nesta categoria.</div>';
 }
 
 function renderFeaturedProducts() {
@@ -1237,8 +1228,8 @@ async function loadFirebaseData() {
 
     const remoteProducts = await productsPromise;
     if (remoteProducts.length) {
+      totalProductsLoaded = remoteProducts.length;
       visibleProducts = uniqueProductsById(remoteProducts);
-      catalogVisibleCount = CATALOG_PAGE_SIZE;
       catalogFeedback.textContent = "Produtos carregados do painel administrativo.";
       renderAllProductSections();
       return;
